@@ -1,33 +1,20 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 
 class OrderList {
   Map<String, OrderData> orderData;
   OrderList({
     required this.orderData,
   });
-//TODO here
-  factory OrderList.fromMap(Map<String, dynamic> map) {
-    return OrderList(
-      orderData: Map<String, OrderData>.from(map),
-    );
+
+  factory OrderList.fromMap(Map<String, dynamic> map) => OrderList(orderData: {
+        for (String key in map.keys) key: OrderData.fromMap(map[key])
+      });
+
+  Map<String, dynamic> toMap() {
+    return {for (String key in orderData.keys) key: orderData[key]!.toMap()};
   }
 
-  factory OrderList.fromJson(String source) =>
-      OrderList.fromMap(json.decode(source));
-
-  @override
-  String toString() => 'OrderList(orderData: $orderData)';
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-
-    return other is OrderList && mapEquals(other.orderData, orderData);
-  }
-
-  @override
-  int get hashCode => orderData.hashCode;
+  String toJson() => json.encode(toMap());
 }
 
 class OrderData {

@@ -15,11 +15,12 @@ class DashboardScreen extends StatelessWidget {
           Color.fromRGBO(46, 45, 42, 0.8),
           TabBar(
             labelColor: Colors.white,
-            indicatorColor: Colors.white,
+            indicatorColor: const Color.fromRGBO(160, 152, 128, 1),
+            indicatorWeight: 5,
             tabs: [
-              Tab(child: Text('Order')),
-              Tab(child: Text('Insight')),
-              Tab(child: Text('Setting')),
+              Tab(child: Text('Order', style: TextStyle(fontSize: 20))),
+              Tab(child: Text('Insight', style: TextStyle(fontSize: 20))),
+              Tab(child: Text('Setting', style: TextStyle(fontSize: 20))),
             ],
           ),
         ),
