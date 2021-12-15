@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "packaging-machinery"
+  },
+  "targets": {
+    "packaging-machinery": {
+      "hosting": {
+        "admin": [
+          "packaging-admin"
+        ]
+      }
+    }
+  }
+}
