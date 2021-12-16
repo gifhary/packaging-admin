@@ -1,6 +1,7 @@
 import 'package:admin/model/order_list.dart';
 import 'package:admin/widget/another_text_field.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class MachineTable extends StatefulWidget {
   final bool editable;
@@ -20,6 +21,7 @@ class MachineTable extends StatefulWidget {
 
 class _MachineTableState extends State<MachineTable> {
   late MachineData _editData;
+  final cur = NumberFormat("#,##0.00", "en_US");
 
   @override
   void initState() {
@@ -156,14 +158,14 @@ class _MachineTableState extends State<MachineTable> {
                               },
                             ),
                           )
-                        : Text((widget.machineData.partRequest[key]?.price ?? 0)
-                            .toString()),
+                        : Text(cur.format(
+                            (widget.machineData.partRequest[key]?.price ?? 0))),
                   ),
                   DataCell(SizedBox(
                     width: 150,
-                    child: Text(((_editData.partRequest[key]?.price ?? 0) *
-                            _editData.partRequest[key]!.quantity)
-                        .toString()),
+                    child: Text(cur.format(
+                        ((_editData.partRequest[key]?.price ?? 0) *
+                            _editData.partRequest[key]!.quantity))),
                   )),
                 ],
               ),
