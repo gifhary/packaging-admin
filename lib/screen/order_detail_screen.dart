@@ -19,6 +19,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   final User _user = Get.arguments['user'] as User;
 
   final order = FirebaseDatabase.instance.ref(DbConstant.order);
+  final _deliveryNote = FirebaseDatabase.instance.ref(DbConstant.deliveryNote);
 
   late Item _editItem;
 
@@ -27,8 +28,26 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   @override
   void initState() {
     _editItem = _item;
+    debugPrint(_item.orderData.delivered.toString());
+    if (_item.orderData.delivered) _getDeliveryNote();
 
     super.initState();
+  }
+
+  _getDeliveryNote() {
+    _deliveryNote
+        .child('${Encrypt.heh(_user.email)}/${_item.orderId}')
+        .get()
+        .then((value) {
+      if (value.exists) {
+        debugPrint('note exists');
+        Map<String, dynamic> values = value.value as Map<String, dynamic>;
+
+        setState(() {
+          _note = DeliveryNote.fromMap(values);
+        });
+      }
+    });
   }
 
   String _getAddress(Address address) {
@@ -346,6 +365,19 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                             },
                           ),
                         const Divider(color: Color.fromRGBO(160, 152, 128, 1)),
+                        Visibility(
+                          visible: _item.orderData.approvedByCustomer,
+                          child: Row(
+                            children: [
+                              Text(
+                                'Approving customer:',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              SizedBox(width: 50),
+                              Text(_item.orderData.approver ?? ''),
+                            ],
+                          ),
+                        ),
                         SizedBox(height: 100),
                         Visibility(
                           visible: !_item.orderData.confirmedBySales,
@@ -475,13 +507,13 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text('12-12-21'),
+                                    Text(_note?.date ?? '-'),
                                     SizedBox(height: 5),
                                     Text(Encrypt.heh(_user.email)),
                                     SizedBox(height: 5),
-                                    Text('777'),
+                                    Text(_note?.refNo ?? '-'),
                                     SizedBox(height: 5),
-                                    Text('555')
+                                    Text(_note?.rnNo ?? '-')
                                   ],
                                 ),
                               ],
@@ -534,7 +566,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                 width: 300,
                                 color: Colors.grey.withOpacity(0.5),
                                 child: Image.network(
-                                  'https://firebasestorage.googleapis.com/v0/b/packaging-machinery.appspot.com/o/companyAsset%2Fdelivery-note-stamp.png?alt=media&token=86c60e7b-94b0-46e1-b642-359681cee7e0',
+                                  _note?.imgUrl ?? '',
                                   fit: BoxFit.cover,
                                 ),
                               ),
