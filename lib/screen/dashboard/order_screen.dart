@@ -1,4 +1,5 @@
 import 'package:admin/constant/db_constant.dart';
+import 'package:admin/model/item.dart';
 import 'package:admin/model/order_list.dart';
 import 'package:admin/model/user.dart';
 import 'package:admin/route/route_constant.dart';
@@ -97,7 +98,6 @@ class _OrderScreenState extends State<OrderScreen> {
                     for (String i in _list.keys)
                       for (String j in _list[i]!.orderData.keys)
                         OrderItem(
-                          orderList: _list[i]!,
                           orderId: j,
                           status: _getStatus(
                               _list[i]!.orderData[j]!.delivered,
@@ -105,7 +105,13 @@ class _OrderScreenState extends State<OrderScreen> {
                               _list[i]!.orderData[j]!.approvedByCustomer),
                           company: _users[i]!.userDetail!.company ?? '-',
                           userId: Encrypt.heh(_users[i]!.email),
-                          onTap: () => Get.toNamed(RouteConstant.orderDetail),
+                          onTap: () => Get.toNamed(RouteConstant.orderDetail,
+                              arguments: {
+                                'item': Item(
+                                    orderId: j,
+                                    orderData: _list[i]!.orderData[j]!),
+                                'user': _users[i]!
+                              }),
                         )
                   ],
                 )),

@@ -1,10 +1,8 @@
 import 'package:admin/constant/db_constant.dart';
-import 'package:admin/model/order_list.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 
 class OrderItem extends StatefulWidget {
-  final OrderList orderList;
   final String userId;
   final String orderId;
   final String status;
@@ -17,7 +15,6 @@ class OrderItem extends StatefulWidget {
       required this.status,
       required this.company,
       this.onTap,
-      required this.orderList,
       required this.userId})
       : super(key: key);
 
