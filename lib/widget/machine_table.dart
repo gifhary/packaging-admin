@@ -3,11 +3,15 @@ import 'package:admin/widget/another_text_field.dart';
 import 'package:flutter/material.dart';
 
 class MachineTable extends StatefulWidget {
+  final bool editable;
   final MachineData machineData;
   final Function(MachineData) onDataChanged;
 
   const MachineTable(
-      {Key? key, required this.machineData, required this.onDataChanged})
+      {Key? key,
+      required this.machineData,
+      required this.onDataChanged,
+      required this.editable})
       : super(key: key);
 
   @override
@@ -99,13 +103,34 @@ class _MachineTableState extends State<MachineTable> {
                     children: [
                       Text(widget.machineData.partRequest[key]!.itemName),
                       SizedBox(height: 5),
-                      SizedBox(
-                        width: 150,
-                        height: 22,
-                        child: AnotherTextField(
-                          hintText: 'Enter time',
-                        ),
-                      )
+                      widget.editable
+                          ? SizedBox(
+                              width: 150,
+                              height: 22,
+                              child: AnotherTextField(
+                                hintText: 'Enter time',
+                                onChanged: (val) {
+                                  _editData.partRequest[key]?.availability =
+                                      val;
+                                },
+                              ),
+                            )
+                          : SizedBox(
+                              width: 150,
+                              height: 22,
+                              child: Text(
+                                '*estimated arrival: ' +
+                                    (widget.machineData.partRequest[key]!
+                                            .availability ??
+                                        ''),
+                                style: TextStyle(
+                                    color: Colors.blue,
+                                    fontSize: 10,
+                                    fontStyle: FontStyle.italic,
+                                    fontWeight: FontWeight.w100,
+                                    letterSpacing: 0.5),
+                              ),
+                            ),
                     ],
                   )),
                   DataCell(
@@ -113,21 +138,27 @@ class _MachineTableState extends State<MachineTable> {
                   DataCell(Text(widget.machineData.partRequest[key]!.quantity
                       .toString())),
                   DataCell(Text('0.00')),
-                  DataCell(SizedBox(
-                    width: 150,
-                    height: 25,
-                    child: AnotherTextField(
-                      hintText: 'Enter amount',
-                      onChanged: (val) {
-                        setState(() {
-                          _editData.partRequest[key]?.price =
-                              double.tryParse(val);
-                        });
+                  DataCell(
+                    widget.editable
+                        ? SizedBox(
+                            width: 150,
+                            height: 25,
+                            child: AnotherTextField(
+                              numberOnly: true,
+                              hintText: 'Enter amount',
+                              onChanged: (val) {
+                                setState(() {
+                                  _editData.partRequest[key]?.price =
+                                      double.tryParse(val);
+                                });
 
-                        widget.onDataChanged(_editData);
-                      },
-                    ),
-                  )),
+                                widget.onDataChanged(_editData);
+                              },
+                            ),
+                          )
+                        : Text((widget.machineData.partRequest[key]?.price ?? 0)
+                            .toString()),
+                  ),
                   DataCell(SizedBox(
                     width: 150,
                     child: Text(((_editData.partRequest[key]?.price ?? 0) *

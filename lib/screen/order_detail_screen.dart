@@ -1,7 +1,11 @@
+import 'package:admin/constant/db_constant.dart';
 import 'package:admin/model/address.dart';
+import 'package:admin/model/delivery_note.dart';
 import 'package:admin/model/item.dart';
 import 'package:admin/model/user.dart';
+import 'package:admin/utils/encrypt.dart';
 import 'package:admin/widget/machine_table.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -14,7 +18,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   final Item _item = Get.arguments['item'] as Item;
   final User _user = Get.arguments['user'] as User;
 
+  final order = FirebaseDatabase.instance.ref(DbConstant.order);
+
   late Item _editItem;
+
+  DeliveryNote? _note;
 
   @override
   void initState() {
@@ -28,7 +36,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     debugPrint(address.toString());
 
     if (address.address1.isNotEmpty) {
-      str += address.address1 + ', ';
+      str = address.address1 + ', ';
     }
     if (address.address2?.isNotEmpty ?? false) {
       str += address.address2! + ', ';
@@ -48,6 +56,18 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     return str;
   }
 
+  _approve() {
+    _editItem.orderData.confirmedBySales = true;
+
+    order
+        .child('${Encrypt.heh(_user.email)}/${_item.orderId}')
+        .update(_editItem.orderData.toMap())
+        .then((value) {
+      debugPrint('quotation completed');
+      Get.back();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     double _width = MediaQuery.of(context).size.width;
@@ -64,6 +84,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         child: SingleChildScrollView(
           child: Column(
             children: [
+              //TODO quotation order
               Container(
                 margin: EdgeInsets.symmetric(vertical: 20),
                 padding: EdgeInsets.all(30),
@@ -318,6 +339,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         ),
                         for (String key in _item.orderData.machineList.keys)
                           MachineTable(
+                            editable: !_item.orderData.confirmedBySales,
                             machineData: _item.orderData.machineList[key]!,
                             onDataChanged: (data) {
                               _editItem.orderData.machineList[key] = data;
@@ -325,20 +347,215 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           ),
                         const Divider(color: Color.fromRGBO(160, 152, 128, 1)),
                         SizedBox(height: 100),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                primary: const Color.fromRGBO(160, 152, 128, 1),
+                        Visibility(
+                          visible: !_item.orderData.confirmedBySales,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  primary:
+                                      const Color.fromRGBO(160, 152, 128, 1),
+                                ),
+                                onPressed: _approve,
+                                child: const Text('Approve'),
                               ),
-                              onPressed: () {},
-                              child: const Text('Approve'),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ],
                     )),
+              ),
+              //TODO delivery note
+              Visibility(
+                visible: _note != null,
+                child: Container(
+                  margin: EdgeInsets.symmetric(vertical: 20),
+                  padding: EdgeInsets.all(30),
+                  width: _width * 0.75,
+                  decoration: BoxDecoration(
+                      border: Border.all(
+                          color: const Color.fromRGBO(160, 152, 128, 1))),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            'Delivery Note ',
+                            style: TextStyle(
+                                fontSize: 30, fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            'Order: ${_item.orderId}',
+                            style: TextStyle(fontSize: 30),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 10),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('PT KHS PACKAGING MACHINERY INDONESIA'),
+                              Text('THE PRIME - Office Sunter, 3rd floor'),
+                              Text('Jl. Yos Sudarso Kav. 30 Sunter Agun'),
+                              Text('Jakarta Utara'),
+                            ],
+                          ),
+                          Image.asset(
+                            'assets/img/khs_logo.png',
+                            width: 234,
+                            height: 72,
+                            fit: BoxFit.contain,
+                          ),
+                        ],
+                      ),
+                      const Divider(color: Color.fromRGBO(160, 152, 128, 1)),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          SizedBox(
+                            width: 250,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _user.userDetail!.company ?? '',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                SizedBox(height: 5),
+                                Text(
+                                  _getAddress(
+                                      _user.userDetail!.deliveryAddress),
+                                  style: TextStyle(height: 1.5),
+                                ),
+                                SizedBox(height: 15),
+                                Row(
+                                  children: [
+                                    Text('ATTENTION: '),
+                                    Text(
+                                      'SPAREPART DEPARTMENT',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                )
+                              ],
+                            ),
+                          ),
+                          SizedBox(
+                            width: 350,
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('Date',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold)),
+                                    SizedBox(height: 5),
+                                    Text('Customer Id',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold)),
+                                    SizedBox(height: 5),
+                                    Text('Ref No.',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold)),
+                                    SizedBox(height: 5),
+                                    Text('Rn No',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold)),
+                                  ],
+                                ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('12-12-21'),
+                                    SizedBox(height: 5),
+                                    Text(Encrypt.heh(_user.email)),
+                                    SizedBox(height: 5),
+                                    Text('777'),
+                                    SizedBox(height: 5),
+                                    Text('555')
+                                  ],
+                                ),
+                              ],
+                            ),
+                          )
+                        ],
+                      ),
+                      SizedBox(height: 20),
+                      for (String key in _item.orderData.machineList.keys)
+                        MachineTable(
+                          machineData: _item.orderData.machineList[key]!,
+                          editable: false,
+                          onDataChanged: (machineData) {},
+                        ),
+                      const Divider(color: Color.fromRGBO(160, 152, 128, 1)),
+                      SizedBox(height: 15),
+                      Text('Remarks,',
+                          style: TextStyle(fontStyle: FontStyle.italic)),
+                      SizedBox(height: 100),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Column(
+                            children: [
+                              Container(
+                                height: 200,
+                                width: 300,
+                                child: Image.network(
+                                    'https://firebasestorage.googleapis.com/v0/b/packaging-machinery.appspot.com/o/companyAsset%2Fdelivery-note-stamp.png?alt=media&token=86c60e7b-94b0-46e1-b642-359681cee7e0'),
+                              ),
+                              Container(
+                                margin: EdgeInsets.all(15),
+                                width: 150,
+                                height: 2,
+                                color: Colors.black,
+                              ),
+                              Text(
+                                'LEONI ANDRIYATI',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              SizedBox(height: 10),
+                              Text('KHS Packaging Machinery Indonesia')
+                            ],
+                          ),
+                          Column(
+                            children: [
+                              Container(
+                                height: 200,
+                                width: 300,
+                                color: Colors.grey.withOpacity(0.5),
+                                child: Image.network(
+                                  'https://firebasestorage.googleapis.com/v0/b/packaging-machinery.appspot.com/o/companyAsset%2Fdelivery-note-stamp.png?alt=media&token=86c60e7b-94b0-46e1-b642-359681cee7e0',
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              Container(
+                                margin: EdgeInsets.all(15),
+                                width: 150,
+                                height: 2,
+                                color: Colors.black,
+                              ),
+                              Text(
+                                _user.userDetail?.name ?? '',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 50),
+                    ],
+                  ),
+                ),
               ),
               Container(
                 color: const Color.fromRGBO(117, 111, 99, 1),

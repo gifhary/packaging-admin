@@ -2,18 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class AnotherTextField extends StatelessWidget {
+  final bool? numberOnly;
   final TextEditingController? controller;
   final String? hintText;
   final Function(String)? onChanged;
 
   const AnotherTextField(
-      {Key? key, this.controller, this.hintText, this.onChanged})
+      {Key? key,
+      this.controller,
+      this.hintText,
+      this.onChanged,
+      this.numberOnly})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return TextField(
-      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9]'))],
+      inputFormatters: numberOnly ?? false
+          ? [FilteringTextInputFormatter.allow(RegExp(r'[0-9]'))]
+          : null,
       onChanged: onChanged,
       controller: controller,
       decoration: InputDecoration(
