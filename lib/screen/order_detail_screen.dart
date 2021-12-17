@@ -5,9 +5,12 @@ import 'package:admin/model/item.dart';
 import 'package:admin/model/user.dart';
 import 'package:admin/utils/encrypt.dart';
 import 'package:admin/widget/machine_table.dart';
+import 'package:admin/widget/machine_table_invoice.dart';
+import 'package:admin/widget/machine_table_note.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 
 class OrderDetailScreen extends StatefulWidget {
   @override
@@ -25,13 +28,27 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
 
   DeliveryNote? _note;
 
+  double _total = 0;
+  final cur = NumberFormat("#,##0.00", "en_US");
+
   @override
   void initState() {
     _editItem = _item;
     debugPrint(_item.orderData.delivered.toString());
     if (_item.orderData.delivered) _getDeliveryNote();
 
+    if (_item.orderData.confirmedBySales) _calculateTotal();
+
     super.initState();
+  }
+
+  _calculateTotal() {
+    for (String i in _item.orderData.machineList.keys) {
+      for (String j in _item.orderData.machineList[i]!.partRequest.keys) {
+        _total += (_item.orderData.machineList[i]!.partRequest[j]!.quantity *
+            (_item.orderData.machineList[i]!.partRequest[j]!.price ?? 0));
+      }
+    }
   }
 
   _getDeliveryNote() {
@@ -365,18 +382,34 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                             },
                           ),
                         const Divider(color: Color.fromRGBO(160, 152, 128, 1)),
-                        Visibility(
-                          visible: _item.orderData.approvedByCustomer,
-                          child: Row(
-                            children: [
-                              Text(
-                                'Approving customer:',
-                                style: TextStyle(fontWeight: FontWeight.bold),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Visibility(
+                              visible: _item.orderData.approvedByCustomer,
+                              child: Row(
+                                children: [
+                                  Text(
+                                    'Approving customer:',
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                  SizedBox(width: 50),
+                                  Text(_item.orderData.approver ?? ''),
+                                ],
                               ),
-                              SizedBox(width: 50),
-                              Text(_item.orderData.approver ?? ''),
-                            ],
-                          ),
+                            ),
+                            Row(
+                              children: [
+                                Text(
+                                  'Total',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                SizedBox(width: 50),
+                                Text(cur.format(_total)),
+                              ],
+                            ),
+                          ],
                         ),
                         SizedBox(height: 100),
                         Visibility(
@@ -523,10 +556,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       ),
                       SizedBox(height: 20),
                       for (String key in _item.orderData.machineList.keys)
-                        MachineTable(
+                        MachineTableNote(
                           machineData: _item.orderData.machineList[key]!,
-                          editable: false,
-                          onDataChanged: (machineData) {},
                         ),
                       const Divider(color: Color.fromRGBO(160, 152, 128, 1)),
                       SizedBox(height: 15),
@@ -585,6 +616,300 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         ],
                       ),
                       const SizedBox(height: 50),
+                    ],
+                  ),
+                ),
+              ),
+              //TODO invoice
+              Visibility(
+                visible: _note != null,
+                child: Container(
+                  margin: EdgeInsets.symmetric(vertical: 20),
+                  padding: EdgeInsets.all(30),
+                  width: _width * 0.75,
+                  decoration: BoxDecoration(
+                      border: Border.all(
+                          color: const Color.fromRGBO(160, 152, 128, 1))),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            'Invoice ',
+                            style: TextStyle(
+                                fontSize: 30, fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            'Order: ${_item.orderId}',
+                            style: TextStyle(fontSize: 30),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 10),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('PT KHS PACKAGING MACHINERY INDONESIA'),
+                              Text('THE PRIME - Office Sunter, 3rd floor'),
+                              Text('Jl. Yos Sudarso Kav. 30 Sunter Agun'),
+                              Text('Jakarta Utara'),
+                            ],
+                          ),
+                          Image.asset(
+                            'assets/img/khs_logo.png',
+                            width: 234,
+                            height: 72,
+                            fit: BoxFit.contain,
+                          ),
+                        ],
+                      ),
+                      const Divider(color: Color.fromRGBO(160, 152, 128, 1)),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          SizedBox(
+                            width: 250,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _user.userDetail!.company ?? '',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                SizedBox(height: 5),
+                                Text(
+                                  _getAddress(
+                                      _user.userDetail!.deliveryAddress),
+                                  style: TextStyle(height: 1.5),
+                                ),
+                                SizedBox(height: 15),
+                                Row(
+                                  children: [
+                                    Text('ATTENTION: '),
+                                    Text(
+                                      'BILLING STATEMENT',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                )
+                              ],
+                            ),
+                          ),
+                          SizedBox(
+                            width: 350,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('Date',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold)),
+                                    SizedBox(height: 5),
+                                    Text('Customer Id',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold)),
+                                    SizedBox(height: 5),
+                                    Text('Ref No.',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold)),
+                                    SizedBox(height: 5),
+                                    Text('RN No',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold)),
+                                  ],
+                                ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(_note?.date ?? '-'),
+                                    SizedBox(height: 5),
+                                    Text(Encrypt.heh(_user.email)),
+                                    SizedBox(height: 5),
+                                    Text(_note?.refNo ?? '-'),
+                                    SizedBox(height: 5),
+                                    Text(_note?.rnNo ?? '-')
+                                  ],
+                                ),
+                              ],
+                            ),
+                          )
+                        ],
+                      ),
+                      SizedBox(height: 20),
+                      for (String key in _item.orderData.machineList.keys)
+                        MachineTableInvoice(
+                          machineData: _item.orderData.machineList[key]!,
+                        ),
+                      const Divider(color: Color.fromRGBO(160, 152, 128, 1)),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                'Total',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              SizedBox(height: 10),
+                              Text(
+                                'PPN 10%',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                          SizedBox(width: 20),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(cur.format(_total)),
+                              SizedBox(height: 10),
+                              Text(cur.format(_total * 0.1)),
+                            ],
+                          )
+                        ],
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          SizedBox(
+                              width: 200,
+                              child: Divider(
+                                  color: Color.fromRGBO(160, 152, 128, 1))),
+                        ],
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Text(
+                            'BALANCE DUE',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          SizedBox(width: 20),
+                          Text(
+                            cur.format((_total * 0.1) + _total),
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                      const Divider(color: Color.fromRGBO(160, 152, 128, 1)),
+                      SizedBox(height: 15),
+                      Text('Remarks,',
+                          style: TextStyle(fontStyle: FontStyle.italic)),
+                      SizedBox(height: 100),
+                      Container(
+                        width: 400,
+                        height: 200,
+                        color: Colors.grey,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          SizedBox(
+                            width: 400,
+                            child: Column(
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Column(
+                                      children: [
+                                        Container(
+                                          margin: EdgeInsets.all(15),
+                                          width: 150,
+                                          height: 2,
+                                          color: Colors.black,
+                                        ),
+                                        Text(
+                                          'ANTONI WIJAYA',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ],
+                                    ),
+                                    Column(
+                                      children: [
+                                        Container(
+                                          margin: EdgeInsets.all(15),
+                                          width: 150,
+                                          height: 2,
+                                          color: Colors.black,
+                                        ),
+                                        Text(
+                                          'HENRY KURNIAWAN',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 20),
+                                Text('KHS Packaging Machinery Indonesia')
+                              ],
+                            ),
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                'To be paid to',
+                                style: TextStyle(color: Colors.blue),
+                              ),
+                              Text(
+                                'PT KHS Packaging Machinery Indonesia',
+                                style: TextStyle(color: Colors.blue),
+                              ),
+                              Text(
+                                'DEUTSCHE BANK AG, Jakarta Branch',
+                                style: TextStyle(color: Colors.blue),
+                              ),
+                              Text(
+                                'IDR Account No: 0024869.00.0',
+                                style: TextStyle(color: Colors.blue),
+                              ),
+                              Text(
+                                'EUR Account No: 0024869.01.0',
+                                style: TextStyle(color: Colors.blue),
+                              ),
+                              Text(
+                                'USD Account No: 0024869.05.0',
+                                style: TextStyle(color: Colors.blue),
+                              ),
+                              Text(
+                                'Swift code: DEUTIDJA',
+                                style: TextStyle(color: Colors.blue),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 25),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            InkWell(
+                              onTap: () {},
+                              child: Text(
+                                'Download',
+                                style: TextStyle(
+                                    color: Colors.grey,
+                                    decoration: TextDecoration.underline),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),
