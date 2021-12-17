@@ -2,6 +2,7 @@ import 'package:admin/constant/db_constant.dart';
 import 'package:admin/model/address.dart';
 import 'package:admin/model/delivery_note.dart';
 import 'package:admin/model/item.dart';
+import 'package:admin/model/payment_proof.dart';
 import 'package:admin/model/staff.dart';
 import 'package:admin/model/user.dart';
 import 'package:admin/utils/encrypt.dart';
@@ -13,9 +14,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'dart:html' as html; //ignore: avoid_web_libraries_in_flutter
-import 'dart:js' as js;
+import 'dart:js' as js; // ignore: avoid_web_libraries_in_flutter
 
-import 'package:screenshot/screenshot.dart'; // ignore: avoid_web_libraries_in_flutter
+import 'package:screenshot/screenshot.dart';
 
 class OrderDetailScreen extends StatefulWidget {
   @override
@@ -32,10 +33,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
 
   final order = FirebaseDatabase.instance.ref(DbConstant.order);
   final _deliveryNote = FirebaseDatabase.instance.ref(DbConstant.deliveryNote);
+  final _paymentProof = FirebaseDatabase.instance.ref(DbConstant.paymentProof);
 
   late Item _editItem;
 
   DeliveryNote? _note;
+  PaymentProof? _proof;
 
   double _total = 0;
   final cur = NumberFormat("#,##0.00", "en_US");
@@ -76,6 +79,21 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
 
         setState(() {
           _note = DeliveryNote.fromMap(values);
+        });
+        _getPaymentProof();
+      }
+    });
+  }
+
+  _getPaymentProof() {
+    _paymentProof
+        .child('${Encrypt.heh(_user.email)}/${_item.orderId}')
+        .get()
+        .then((val) {
+      if (val.exists) {
+        Map<String, dynamic> values = val.value as Map<String, dynamic>;
+        setState(() {
+          _proof = PaymentProof.fromMap(values);
         });
       }
     });
@@ -155,6 +173,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   padding: EdgeInsets.all(30),
                   width: _width * 0.75,
                   decoration: BoxDecoration(
+                      color: Colors.white,
                       border: Border.all(
                           color: const Color.fromRGBO(160, 152, 128, 1))),
                   child: Padding(
@@ -494,6 +513,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     padding: EdgeInsets.all(30),
                     width: _width * 0.75,
                     decoration: BoxDecoration(
+                        color: Colors.white,
                         border: Border.all(
                             color: const Color.fromRGBO(160, 152, 128, 1))),
                     child: Column(
@@ -700,6 +720,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     padding: EdgeInsets.all(30),
                     width: _width * 0.75,
                     decoration: BoxDecoration(
+                        color: Colors.white,
                         border: Border.all(
                             color: const Color.fromRGBO(160, 152, 128, 1))),
                     child: Column(
@@ -999,7 +1020,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               ),
               //TODO payment
               Visibility(
-                visible: true,
+                visible: _proof != null,
                 child: Screenshot(
                   controller: _paymentCtrl,
                   child: Container(
@@ -1007,6 +1028,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     padding: EdgeInsets.all(30),
                     width: _width * 0.75,
                     decoration: BoxDecoration(
+                        color: Colors.white,
                         border: Border.all(
                             color: const Color.fromRGBO(160, 152, 128, 1))),
                     child: Column(
@@ -1132,7 +1154,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                             width: double.infinity,
                             color: Colors.grey.withOpacity(0.5),
                             child: Image.network(
-                              _director.signature,
+                              _proof?.imgUrl ?? '',
                               fit: BoxFit.contain,
                             )),
                         SizedBox(height: 50),
@@ -1149,7 +1171,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                       Text('Date of Payment: '),
                                       SizedBox(width: 10),
                                       Text(
-                                        '12-12-12',
+                                        _proof?.paymentDate ?? '-',
                                         style: TextStyle(
                                             fontWeight: FontWeight.bold),
                                       )
