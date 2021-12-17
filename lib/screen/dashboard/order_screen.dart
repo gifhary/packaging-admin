@@ -1,6 +1,7 @@
 import 'package:admin/constant/db_constant.dart';
 import 'package:admin/model/item.dart';
 import 'package:admin/model/order_list.dart';
+import 'package:admin/model/staff.dart';
 import 'package:admin/model/user.dart';
 import 'package:admin/route/route_constant.dart';
 import 'package:admin/utils/encrypt.dart';
@@ -18,14 +19,31 @@ class OrderScreen extends StatefulWidget {
 class _OrderScreenState extends State<OrderScreen> {
   final order = FirebaseDatabase.instance.ref(DbConstant.order);
   final user = FirebaseDatabase.instance.ref(DbConstant.user);
+  final staff = FirebaseDatabase.instance.ref(DbConstant.staff);
 
   Map<String, OrderList> _list = Map();
   Map<String, User> _users = Map();
 
+  late Staff _director, _salesAdmin, _salesManager;
+
   @override
   void initState() {
     _getOrderList();
+    _getStaff();
     super.initState();
+  }
+
+  _getStaff() {
+    staff.get().then((value) {
+      if (value.exists) {
+        debugPrint('staff: ' + value.value.toString());
+        Map<dynamic, dynamic> values = value.value as Map;
+
+        _director = Staff.fromMap(values['director']);
+        _salesAdmin = Staff.fromMap(values['salesAdmin']);
+        _salesManager = Staff.fromMap(values['salesManager']);
+      }
+    });
   }
 
   _getUsers() {
@@ -110,7 +128,10 @@ class _OrderScreenState extends State<OrderScreen> {
                                 'item': Item(
                                     orderId: j,
                                     orderData: _list[i]!.orderData[j]!),
-                                'user': _users[i]!
+                                'user': _users[i]!,
+                                'director': _director,
+                                'salesAdmin': _salesAdmin,
+                                'salesManager': _salesManager,
                               }),
                         )
                   ],
