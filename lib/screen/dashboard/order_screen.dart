@@ -94,48 +94,67 @@ class _OrderScreenState extends State<OrderScreen> {
       backgroundColor: Colors.white,
       body: Center(
         child: SingleChildScrollView(
-          child: Container(
-            margin: EdgeInsets.symmetric(vertical: 20),
-            padding: EdgeInsets.all(20),
-            width: _width * 0.75,
-            decoration: BoxDecoration(
-                border:
-                    Border.all(color: const Color.fromRGBO(160, 152, 128, 1))),
-            child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 5),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Customer Orders', style: TextStyle(fontSize: 30)),
-                    SizedBox(height: 10),
-                    Text('View, complete or manage your customer bookings.'),
-                    SizedBox(height: 5),
-                    Text('Time Zone: Western Indonesia Time (GMT+7)'),
-                    SizedBox(height: 20),
-                    Divider(color: const Color.fromRGBO(160, 152, 128, 1)),
-                    for (String i in _list.keys)
-                      for (String j in _list[i]!.orderData.keys)
-                        OrderItem(
-                          orderId: j,
-                          status: _getStatus(
-                              _list[i]!.orderData[j]!.delivered,
-                              _list[i]!.orderData[j]!.confirmedBySales,
-                              _list[i]!.orderData[j]!.approvedByCustomer),
-                          company: _users[i]!.userDetail!.company ?? '-',
-                          userId: Encrypt.heh(_users[i]!.email),
-                          onTap: () => Get.toNamed(RouteConstant.orderDetail,
-                              arguments: {
-                                'item': Item(
-                                    orderId: j,
-                                    orderData: _list[i]!.orderData[j]!),
-                                'user': _users[i]!,
-                                'director': _director,
-                                'salesAdmin': _salesAdmin,
-                                'salesManager': _salesManager,
-                              }),
-                        )
-                  ],
-                )),
+          child: Column(
+            children: [
+              Container(
+                constraints: BoxConstraints(
+                    minHeight: MediaQuery.of(context).size.height),
+                margin: EdgeInsets.symmetric(vertical: 20),
+                padding: EdgeInsets.all(20),
+                width: _width * 0.75,
+                decoration: BoxDecoration(
+                    border: Border.all(
+                        color: const Color.fromRGBO(160, 152, 128, 1))),
+                child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 5),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Customer Orders', style: TextStyle(fontSize: 30)),
+                        SizedBox(height: 10),
+                        Text(
+                            'View, complete or manage your customer bookings.'),
+                        SizedBox(height: 5),
+                        Text('Time Zone: Western Indonesia Time (GMT+7)'),
+                        SizedBox(height: 20),
+                        Divider(color: const Color.fromRGBO(160, 152, 128, 1)),
+                        for (String i in _list.keys)
+                          for (String j in _list[i]!.orderData.keys)
+                            OrderItem(
+                              orderId: j,
+                              status: _getStatus(
+                                  _list[i]!.orderData[j]!.delivered,
+                                  _list[i]!.orderData[j]!.confirmedBySales,
+                                  _list[i]!.orderData[j]!.approvedByCustomer),
+                              company: _users[i]!.userDetail!.company ?? '-',
+                              userId: Encrypt.heh(_users[i]!.email),
+                              onTap: () => Get.toNamed(
+                                  RouteConstant.orderDetail,
+                                  arguments: {
+                                    'item': Item(
+                                        orderId: j,
+                                        orderData: _list[i]!.orderData[j]!),
+                                    'user': _users[i]!,
+                                    'director': _director,
+                                    'salesAdmin': _salesAdmin,
+                                    'salesManager': _salesManager,
+                                  }),
+                            )
+                      ],
+                    )),
+              ),
+              Container(
+                color: const Color.fromRGBO(117, 111, 99, 1),
+                width: double.infinity,
+                height: 43,
+                child: const Center(
+                  child: Text(
+                    '©2022 by Samantha Tiara W. Master\'s Thesis Project - EM.',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
