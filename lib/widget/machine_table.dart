@@ -57,7 +57,7 @@ class _MachineTableState extends State<MachineTable> {
               ],
             ),
           ),
-          DataTable(columns: [
+          DataTable(dataRowHeight: 70, columns: [
             DataColumn(
               label: Text(
                 'Item',
@@ -78,7 +78,7 @@ class _MachineTableState extends State<MachineTable> {
             ),
             DataColumn(
               label: Text(
-                'Contract Discount %',
+                'Contract\nDiscount %',
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
@@ -101,7 +101,7 @@ class _MachineTableState extends State<MachineTable> {
                 cells: <DataCell>[
                   DataCell(Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.end,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(widget.machineData.partRequest[key]!.itemName),
                       SizedBox(height: 5),
@@ -135,8 +135,31 @@ class _MachineTableState extends State<MachineTable> {
                             ),
                     ],
                   )),
-                  DataCell(
-                      Text(widget.machineData.partRequest[key]!.partNumber)),
+                  DataCell(Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(widget.machineData.partRequest[key]!.partNumber),
+                      widget.editable
+                          ? SizedBox(
+                              width: 130,
+                              height: 22,
+                              child: AnotherTextField(
+                                hintText: 'HS code',
+                                onChanged: (val) {
+                                  _editData.partRequest[key]?.availability =
+                                      val;
+                                },
+                              ),
+                            )
+                          : Text(
+                              widget.machineData.partRequest[key]!
+                                      .hsPartNumber ??
+                                  '',
+                              style: TextStyle(color: Colors.blue),
+                            ),
+                    ],
+                  )),
                   DataCell(Text(widget.machineData.partRequest[key]!.quantity
                       .toString())),
                   DataCell(Text('0.00')),
@@ -144,28 +167,73 @@ class _MachineTableState extends State<MachineTable> {
                     widget.editable
                         ? SizedBox(
                             width: 150,
-                            height: 25,
-                            child: AnotherTextField(
-                              numberOnly: true,
-                              hintText: 'Enter amount',
-                              onChanged: (val) {
-                                setState(() {
-                                  _editData.partRequest[key]?.price =
-                                      double.tryParse(val);
-                                });
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                AnotherTextField(
+                                  numberOnly: true,
+                                  hintText: 'IDR price',
+                                  onChanged: (val) {
+                                    setState(() {
+                                      _editData.partRequest[key]?.price =
+                                          double.tryParse(val);
+                                    });
 
-                                widget.onDataChanged(_editData);
-                              },
+                                    widget.onDataChanged(_editData);
+                                  },
+                                ),
+                                SizedBox(height: 10),
+                                AnotherTextField(
+                                  numberOnly: true,
+                                  hintText: 'EUR price',
+                                  onChanged: (val) {
+                                    setState(() {
+                                      _editData.partRequest[key]?.eurPrice =
+                                          double.tryParse(val);
+                                    });
+                                    widget.onDataChanged(_editData);
+                                  },
+                                ),
+                              ],
                             ),
                           )
-                        : Text(cur.format(
-                            (widget.machineData.partRequest[key]?.price ?? 0))),
+                        : Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('IDR ' +
+                                  cur.format((widget.machineData
+                                          .partRequest[key]?.price ??
+                                      0))),
+                              Text(
+                                'EUR ' +
+                                    cur.format((widget.machineData
+                                            .partRequest[key]?.eurPrice ??
+                                        0)),
+                                style: TextStyle(color: Colors.blue),
+                              ),
+                            ],
+                          ),
                   ),
                   DataCell(SizedBox(
                     width: 150,
-                    child: Text(cur.format(
-                        ((_editData.partRequest[key]?.price ?? 0) *
-                            _editData.partRequest[key]!.quantity))),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('IDR ' +
+                            cur.format(
+                                ((_editData.partRequest[key]?.price ?? 0) *
+                                    _editData.partRequest[key]!.quantity))),
+                        Text(
+                          'EUR ' +
+                              cur.format(
+                                  ((_editData.partRequest[key]?.eurPrice ?? 0) *
+                                      _editData.partRequest[key]!.quantity)),
+                          style: TextStyle(color: Colors.blue),
+                        ),
+                      ],
+                    ),
                   )),
                 ],
               ),

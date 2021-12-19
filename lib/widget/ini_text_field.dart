@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 
 class IniTextField extends StatelessWidget {
+  final bool? readOnly;
   final String? label;
   final TextEditingController? controller;
   final String? hintText;
   final bool? obscureText;
 
   const IniTextField(
-      {Key? key, this.label, this.controller, this.hintText, this.obscureText})
+      {Key? key,
+      this.label,
+      this.controller,
+      this.hintText,
+      this.obscureText,
+      this.readOnly})
       : super(key: key);
 
   @override
@@ -21,6 +27,7 @@ class IniTextField extends StatelessWidget {
             child: Text(label ?? ""),
           ),
           TextField(
+            readOnly: readOnly ?? false,
             obscureText: obscureText ?? false,
             controller: controller,
             decoration: InputDecoration(

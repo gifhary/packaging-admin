@@ -1,11 +1,15 @@
 import 'package:admin/constant/db_constant.dart';
 import 'package:admin/model/address.dart';
+import 'package:admin/model/data_group.dart';
 import 'package:admin/model/delivery_note.dart';
+import 'package:admin/model/german_data.dart';
 import 'package:admin/model/item.dart';
 import 'package:admin/model/payment_proof.dart';
 import 'package:admin/model/staff.dart';
 import 'package:admin/model/user.dart';
 import 'package:admin/utils/encrypt.dart';
+import 'package:admin/widget/another_text_field.dart';
+import 'package:admin/widget/ini_text_field.dart';
 import 'package:admin/widget/machine_table.dart';
 import 'package:admin/widget/machine_table_invoice.dart';
 import 'package:admin/widget/machine_table_note.dart';
@@ -41,6 +45,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   PaymentProof? _proof;
 
   double _total = 0;
+  double _eurTotal = 0;
+
   final cur = NumberFormat("#,##0.00", "en_US");
 
   ScreenshotController _quotationCtrl = ScreenshotController();
@@ -48,13 +54,28 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   ScreenshotController _invoiceCtrl = ScreenshotController();
   ScreenshotController _paymentCtrl = ScreenshotController();
 
+  TextEditingController _germanOffer = TextEditingController();
+  TextEditingController _purchaseOrder = TextEditingController();
+  TextEditingController _orderConfirm = TextEditingController();
+  TextEditingController _dnSi = TextEditingController();
+  TextEditingController _invoice = TextEditingController();
+
   @override
   void initState() {
     _editItem = _item;
     debugPrint(_item.orderData.delivered.toString());
     if (_item.orderData.delivered) _getDeliveryNote();
 
-    if (_item.orderData.confirmedBySales) _calculateTotal();
+    if (_item.orderData.confirmedBySales) {
+      _calculateTotal();
+
+      _germanOffer.text = _item.orderData.germanData?.germanOffered.text ?? ' ';
+      _purchaseOrder.text =
+          _item.orderData.germanData?.purchaseOrder.text ?? ' ';
+      _orderConfirm.text = _item.orderData.germanData?.orderConfirm.text ?? ' ';
+      _dnSi.text = _item.orderData.germanData?.dnSi ?? ' ';
+      _invoice.text = _item.orderData.germanData?.invoice ?? ' ';
+    }
 
     super.initState();
   }
@@ -64,6 +85,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       for (String j in _item.orderData.machineList[i]!.partRequest.keys) {
         _total += (_item.orderData.machineList[i]!.partRequest[j]!.quantity *
             (_item.orderData.machineList[i]!.partRequest[j]!.price ?? 0));
+        _eurTotal += (_item.orderData.machineList[i]!.partRequest[j]!.quantity *
+            (_item.orderData.machineList[i]!.partRequest[j]!.eurPrice ?? 0));
       }
     }
   }
@@ -126,6 +149,19 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
 
   _approve() {
     _editItem.orderData.confirmedBySales = true;
+
+    _editItem.orderData.germanData = GermanData(
+        germanOffered: DataGroup(
+            text: _germanOffer.text,
+            date: DateFormat('dd-MM-yyyy').format(DateTime.now())),
+        purchaseOrder: DataGroup(
+            text: _purchaseOrder.text,
+            date: DateFormat('dd-MM-yyyy').format(DateTime.now())),
+        orderConfirm: DataGroup(
+            text: _orderConfirm.text,
+            date: DateFormat('dd-MM-yyyy').format(DateTime.now())),
+        dnSi: _dnSi.text,
+        invoice: _invoice.text);
 
     order
         .child('${Encrypt.heh(_user.email)}/${_item.orderId}')
@@ -457,12 +493,232 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                         TextStyle(fontWeight: FontWeight.bold),
                                   ),
                                   SizedBox(width: 50),
-                                  Text(cur.format(_total)),
+                                  Text('IDR ' + cur.format(_total)),
                                 ],
                               ),
                             ],
                           ),
-                          SizedBox(height: 100),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Text(
+                                'Total',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.blue),
+                              ),
+                              SizedBox(width: 50),
+                              Text(
+                                'EUR ' + cur.format(_eurTotal),
+                                style: TextStyle(color: Colors.blue),
+                              ),
+                            ],
+                          ),
+                          _item.orderData.confirmedBySales
+                              ? Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    Text(
+                                      'Disc. ${_item.orderData.hsDiscount ?? 0}%',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.blue),
+                                    ),
+                                    SizedBox(width: 50),
+                                    Text(
+                                      'EUR ' +
+                                          cur.format(_eurTotal *
+                                              ((_item.orderData.hsDiscount ??
+                                                      0) /
+                                                  100)),
+                                      style: TextStyle(color: Colors.blue),
+                                    ),
+                                  ],
+                                )
+                              : Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    Text(
+                                      'Disc. ',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.blue),
+                                    ),
+                                    SizedBox(
+                                      width: 50,
+                                      child: AnotherTextField(
+                                        numberOnly: true,
+                                        onChanged: (val) {
+                                          setState(() {
+                                            _editItem.orderData.hsDiscount =
+                                                double.tryParse(val)!;
+                                          });
+                                        },
+                                      ),
+                                    ),
+                                    Text('%',
+                                        style: TextStyle(color: Colors.blue)),
+                                  ],
+                                ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              SizedBox(
+                                  width: 200,
+                                  child: Divider(
+                                      color: Color.fromRGBO(160, 152, 128, 1))),
+                            ],
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Text(
+                                'Total',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.blue),
+                              ),
+                              SizedBox(width: 50),
+                              Text(
+                                'EUR ' +
+                                    cur.format(_eurTotal -
+                                        (_eurTotal *
+                                            ((_item.orderData.hsDiscount ?? 0) /
+                                                100))),
+                                style: TextStyle(color: Colors.blue),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 20),
+                          Container(
+                            margin: EdgeInsets.symmetric(vertical: 20),
+                            padding: EdgeInsets.all(30),
+                            width: _width * 0.75,
+                            decoration: BoxDecoration(
+                                color: Colors.white,
+                                border: Border.all(
+                                    color: const Color.fromRGBO(
+                                        160, 152, 128, 1))),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  width: double.infinity,
+                                  color:
+                                      const Color.fromRGBO(160, 152, 128, 0.16),
+                                  child: Center(
+                                    child: Text(
+                                      'KHS ID - KHS Germany',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: const Color.fromRGBO(
+                                            117, 111, 99, 1),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 100),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          SizedBox(
+                                            width: 500,
+                                            child: IniTextField(
+                                              controller: _germanOffer,
+                                              readOnly: _item
+                                                  .orderData.confirmedBySales,
+                                              label: "German Offered",
+                                              hintText: 'Enter German Offered',
+                                            ),
+                                          ),
+                                          Text(_item.orderData.confirmedBySales
+                                              ? _item.orderData.germanData
+                                                      ?.germanOffered.date ??
+                                                  ''
+                                              : DateFormat('dd-MM-yyyy')
+                                                  .format(DateTime.now()))
+                                        ],
+                                      ),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          SizedBox(
+                                            width: 500,
+                                            child: IniTextField(
+                                              controller: _purchaseOrder,
+                                              readOnly: _item
+                                                  .orderData.confirmedBySales,
+                                              label: "Purchased Order",
+                                              hintText: 'Enter PO',
+                                            ),
+                                          ),
+                                          Text(_item.orderData.confirmedBySales
+                                              ? _item.orderData.germanData
+                                                      ?.purchaseOrder.date ??
+                                                  ''
+                                              : DateFormat('dd-MM-yyyy')
+                                                  .format(DateTime.now()))
+                                        ],
+                                      ),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          SizedBox(
+                                            width: 500,
+                                            child: IniTextField(
+                                              controller: _orderConfirm,
+                                              readOnly: _item
+                                                  .orderData.confirmedBySales,
+                                              label: "Order Confirmation",
+                                              hintText: 'Enter OC',
+                                            ),
+                                          ),
+                                          Text(_item.orderData.confirmedBySales
+                                              ? _item.orderData.germanData
+                                                      ?.orderConfirm.date ??
+                                                  ''
+                                              : DateFormat('dd-MM-yyyy')
+                                                  .format(DateTime.now()))
+                                        ],
+                                      ),
+                                      SizedBox(
+                                        width: 500,
+                                        child: IniTextField(
+                                          controller: _dnSi,
+                                          readOnly:
+                                              _item.orderData.confirmedBySales,
+                                          label: "DN-SI",
+                                          hintText:
+                                              'Enter Delivery Note issued by HQ',
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        width: 500,
+                                        child: IniTextField(
+                                          controller: _invoice,
+                                          readOnly:
+                                              _item.orderData.confirmedBySales,
+                                          label: "Invoice",
+                                          hintText: 'Enter KHS Invoice',
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                          SizedBox(height: 80),
                           Visibility(
                             visible: !_item.orderData.confirmedBySales,
                             child: Row(

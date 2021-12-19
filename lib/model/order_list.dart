@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:admin/model/german_data.dart';
+
 class OrderList {
   Map<String, OrderData> orderData;
   OrderList({
@@ -18,6 +20,7 @@ class OrderList {
 }
 
 class OrderData {
+  double? hsDiscount;
   String orderTitle;
   bool approvedByCustomer;
   bool confirmedBySales;
@@ -25,20 +28,27 @@ class OrderData {
   String? approver;
   String orderTime;
   String? deliveryNoteConfirmedDate;
+  GermanData? germanData;
   Map<String, MachineData> machineList;
 
   OrderData({
-    this.approver,
+    this.hsDiscount,
     required this.orderTitle,
     required this.approvedByCustomer,
     required this.confirmedBySales,
     required this.delivered,
+    this.approver,
     required this.orderTime,
     this.deliveryNoteConfirmedDate,
+    required this.germanData,
     required this.machineList,
   });
 
   factory OrderData.fromMap(Map<String, dynamic> json) => OrderData(
+          germanData: json['germanData'] != null
+              ? GermanData.fromMap(json['germanData'])
+              : null,
+          hsDiscount: json['hsDiscount'],
           approver: json['approver'],
           delivered: json['delivered'],
           approvedByCustomer: json['approvedByCustomer'],
@@ -56,6 +66,8 @@ class OrderData {
                     key: PartData(
                       availability: json['machineList'][machineKey]
                           ['partRequest'][key]['availability'],
+                      eurPrice: json['machineList'][machineKey]['partRequest']
+                          [key]['eurPrice'],
                       price: json['machineList'][machineKey]['partRequest'][key]
                           ['price'],
                       partNumber: json['machineList'][machineKey]['partRequest']
@@ -64,12 +76,16 @@ class OrderData {
                           [key]['itemName'],
                       quantity: json['machineList'][machineKey]['partRequest']
                           [key]['quantity'],
+                      hsPartNumber: json['machineList'][machineKey]
+                          ['partRequest'][key]['hsPartNumber'],
                     )
                 },
               )
           });
 
   Map<String, dynamic> toMap() => {
+        'germanData': germanData?.toMap() ?? null,
+        'hsDiscount': hsDiscount,
         'approver': approver,
         'delivered': delivered,
         "orderTitle": orderTitle,
@@ -92,13 +108,21 @@ class OrderData {
                     'price':
                         machineList[machineKey]!.partRequest[partKey]!.price ??
                             null,
+                    'eurPrice': machineList[machineKey]!
+                            .partRequest[partKey]!
+                            .eurPrice ??
+                        null,
                     'partNumber': machineList[machineKey]!
                         .partRequest[partKey]!
                         .partNumber,
                     'itemName':
                         machineList[machineKey]!.partRequest[partKey]!.itemName,
                     'quantity':
-                        machineList[machineKey]!.partRequest[partKey]!.quantity
+                        machineList[machineKey]!.partRequest[partKey]!.quantity,
+                    'hsPartNumber': machineList[machineKey]!
+                            .partRequest[partKey]!
+                            .hsPartNumber ??
+                        null,
                   }
               }
             },
@@ -117,16 +141,20 @@ class MachineData {
 
 class PartData {
   String partNumber;
+  String? hsPartNumber;
   String itemName;
   double? price;
+  double? eurPrice;
   int quantity;
   String? availability;
 
   PartData({
-    this.availability,
     required this.partNumber,
+    this.hsPartNumber,
     required this.itemName,
     this.price,
+    this.eurPrice,
     required this.quantity,
+    this.availability,
   });
 }
