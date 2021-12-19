@@ -26,11 +26,13 @@ class ImageTaker extends StatelessWidget {
     return InkWell(
       onTap: _getCustomerSignature,
       child: Container(
-        color: imageFile.isNotEmpty || imageUrl.isNotEmpty
-            ? Colors.white
-            : Colors.grey.withOpacity(0.2),
+        decoration: BoxDecoration(
+            color: imageFile.isNotEmpty || imageUrl.isNotEmpty
+                ? Colors.white
+                : Colors.grey.withOpacity(0.2),
+            border: Border.all(color: const Color.fromRGBO(160, 152, 128, 1))),
         width: 250,
-        height: 200,
+        height: 150,
         child: imageFile.isNotEmpty
             ? Image.memory(
                 imageFile,
@@ -38,7 +40,7 @@ class ImageTaker extends StatelessWidget {
               )
             : imageUrl.isNotEmpty
                 ? Stack(
-                    alignment: Alignment.topRight,
+                    alignment: Alignment.center,
                     children: [
                       Image.network(
                         imageUrl,
@@ -46,7 +48,6 @@ class ImageTaker extends StatelessWidget {
                       ),
                       Icon(
                         Icons.edit,
-                        color: Colors.grey,
                       ),
                     ],
                   )

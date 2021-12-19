@@ -2,10 +2,13 @@ import 'dart:typed_data';
 
 import 'package:admin/constant/db_constant.dart';
 import 'package:admin/model/staff.dart';
+import 'package:admin/utils/encrypt.dart';
 import 'package:admin/widget/image_taker.dart';
 import 'package:admin/widget/ini_text_field.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class SettingScreen extends StatefulWidget {
   @override
@@ -15,20 +18,52 @@ class SettingScreen extends StatefulWidget {
 class _SettingScreenState extends State<SettingScreen> {
   Staff? _director, _salesAdmin, _salesManager;
   final staff = FirebaseDatabase.instance.ref(DbConstant.staff);
+  final db = FirebaseDatabase.instance.ref(DbConstant.adminPass);
 
   TextEditingController _directorCtrl = TextEditingController();
   TextEditingController _salesMgrCtrl = TextEditingController();
   TextEditingController _salesAdmCtrl = TextEditingController();
 
+  TextEditingController _currentPass = TextEditingController();
+  TextEditingController _newPass = TextEditingController();
+  TextEditingController _confirmPass = TextEditingController();
+
   Uint8List _directorSgntr = Uint8List(0);
   Uint8List _salsesMgrSgntr = Uint8List(0);
   Uint8List _salesAdmSgntr = Uint8List(0);
+
+  String _currentPassMsg = '';
+  String _confirmPassMsg = '';
 
   @override
   void initState() {
     _getStaff();
 
     super.initState();
+  }
+
+  _updateNameAndSignature(String position, String name, Uint8List image) async {
+    final storage = FirebaseStorage.instance
+        .ref('companyAsset/$position-${name.replaceAll(' ', '-')}.png');
+
+    TaskSnapshot uploadTask = await storage.putData(
+        image, SettableMetadata(contentType: 'image/png'));
+
+    uploadTask.ref.getDownloadURL().then((url) {
+      staff
+          .child(position)
+          .update(Staff(name: name, signature: url).toMap())
+          .then((value) {
+        Get.defaultDialog(
+            titleStyle: const TextStyle(color: Color.fromRGBO(117, 111, 99, 1)),
+            title: "Success",
+            middleText: "Data updated successfuly",
+            onConfirm: Get.back,
+            buttonColor: const Color.fromRGBO(117, 111, 99, 1),
+            confirmTextColor: Colors.white,
+            textConfirm: 'OK');
+      });
+    });
   }
 
   _getStaff() {
@@ -45,6 +80,48 @@ class _SettingScreenState extends State<SettingScreen> {
           _directorCtrl.text = _director!.name;
           _salesMgrCtrl.text = _salesManager!.name;
           _salesAdmCtrl.text = _salesAdmin!.name;
+        });
+      }
+    });
+  }
+
+  _changPassword() {
+    if (_currentPass.text.isEmpty) return;
+    if (_newPass.text.isEmpty) return;
+    if (_confirmPass.text.isEmpty) return;
+    if (_newPass.text != _confirmPass.text) {
+      setState(() {
+        _confirmPassMsg = 'password does not match';
+      });
+      return;
+    }
+
+    db.get().then((value) {
+      debugPrint(value.value.toString());
+      if (value.value == Encrypt.heh(_currentPass.text)) {
+        db.set(Encrypt.heh(_newPass.text)).then((value) {
+          Get.defaultDialog(
+              titleStyle:
+                  const TextStyle(color: Color.fromRGBO(117, 111, 99, 1)),
+              title: "Success",
+              middleText: "Password changed successfuly",
+              onConfirm: () {
+                Get.back();
+                setState(() {
+                  _currentPassMsg = '';
+                  _confirmPassMsg = '';
+                  _currentPass.text = '';
+                  _newPass.text = '';
+                  _confirmPass.text = '';
+                });
+              },
+              buttonColor: const Color.fromRGBO(117, 111, 99, 1),
+              confirmTextColor: Colors.white,
+              textConfirm: 'OK');
+        });
+      } else {
+        setState(() {
+          _currentPassMsg = 'current password is wrong';
         });
       }
     });
@@ -103,11 +180,28 @@ class _SettingScreenState extends State<SettingScreen> {
                                         hintText: 'Name',
                                       ),
                                     ),
-                                    SizedBox(height: 10),
+                                    SizedBox(height: 20),
                                     ImageTaker(
+                                      onImagePicked: (img) {
+                                        setState(() {
+                                          _directorSgntr = img;
+                                        });
+                                      },
                                       imageFile: _directorSgntr,
                                       imageUrl: _director!.signature,
-                                    )
+                                    ),
+                                    SizedBox(height: 10),
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        primary: const Color.fromRGBO(
+                                            160, 152, 128, 1),
+                                      ),
+                                      onPressed: () => _updateNameAndSignature(
+                                          'director',
+                                          _directorCtrl.text,
+                                          _directorSgntr),
+                                      child: const Text('Update'),
+                                    ),
                                   ],
                                 ),
                                 Column(
@@ -126,10 +220,27 @@ class _SettingScreenState extends State<SettingScreen> {
                                         hintText: 'Name',
                                       ),
                                     ),
-                                    SizedBox(height: 10),
+                                    SizedBox(height: 20),
                                     ImageTaker(
+                                      onImagePicked: (img) {
+                                        setState(() {
+                                          _salsesMgrSgntr = img;
+                                        });
+                                      },
                                       imageFile: _salsesMgrSgntr,
                                       imageUrl: _salesManager!.signature,
+                                    ),
+                                    SizedBox(height: 10),
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        primary: const Color.fromRGBO(
+                                            160, 152, 128, 1),
+                                      ),
+                                      onPressed: () => _updateNameAndSignature(
+                                          'salesManager',
+                                          _salesMgrCtrl.text,
+                                          _salsesMgrSgntr),
+                                      child: const Text('Update'),
                                     ),
                                   ],
                                 ),
@@ -149,11 +260,28 @@ class _SettingScreenState extends State<SettingScreen> {
                                         hintText: 'Name',
                                       ),
                                     ),
-                                    SizedBox(height: 10),
+                                    SizedBox(height: 20),
                                     ImageTaker(
+                                      onImagePicked: (img) {
+                                        setState(() {
+                                          _salesAdmSgntr = img;
+                                        });
+                                      },
                                       imageFile: _salesAdmSgntr,
                                       imageUrl: _salesAdmin!.signature,
-                                    )
+                                    ),
+                                    SizedBox(height: 10),
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        primary: const Color.fromRGBO(
+                                            160, 152, 128, 1),
+                                      ),
+                                      onPressed: () => _updateNameAndSignature(
+                                          'salesAdmin',
+                                          _salesAdmCtrl.text,
+                                          _salesAdmSgntr),
+                                      child: const Text('Update'),
+                                    ),
                                   ],
                                 ),
                               ],
@@ -174,24 +302,27 @@ class _SettingScreenState extends State<SettingScreen> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   IniTextField(
+                                    controller: _currentPass,
                                     obscureText: true,
                                     label: "Current password",
                                     hintText: 'Current password',
                                   ),
-                                  Text('wrong',
+                                  Text(_currentPassMsg,
                                       style: TextStyle(
                                           color: Colors.red, fontSize: 10)),
                                   IniTextField(
+                                    controller: _newPass,
                                     obscureText: true,
                                     label: "New password",
                                     hintText: 'New password',
                                   ),
                                   IniTextField(
+                                    controller: _confirmPass,
                                     obscureText: true,
                                     label: "Confirm password",
                                     hintText: 'Confirm password',
                                   ),
-                                  Text('not match',
+                                  Text(_confirmPassMsg,
                                       style: TextStyle(
                                           color: Colors.red, fontSize: 10)),
                                   Padding(
@@ -202,7 +333,7 @@ class _SettingScreenState extends State<SettingScreen> {
                                         primary: const Color.fromRGBO(
                                             160, 152, 128, 1),
                                       ),
-                                      onPressed: () {},
+                                      onPressed: _changPassword,
                                       child: const Text('Change password'),
                                     ),
                                   ),
