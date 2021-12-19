@@ -129,8 +129,8 @@ class _OrderScreenState extends State<OrderScreen> {
                               company: _users[i]!.userDetail!.company ?? '-',
                               userId: Encrypt.heh(_users[i]!.email),
                               onTap: () => Get.toNamed(
-                                  RouteConstant.orderDetail,
-                                  arguments: {
+                                      RouteConstant.orderDetail,
+                                      arguments: {
                                     'item': Item(
                                         orderId: j,
                                         orderData: _list[i]!.orderData[j]!),
@@ -138,7 +138,10 @@ class _OrderScreenState extends State<OrderScreen> {
                                     'director': _director,
                                     'salesAdmin': _salesAdmin,
                                     'salesManager': _salesManager,
-                                  }),
+                                  })!
+                                  .then((value) {
+                                setState(() {});
+                              }),
                             )
                       ],
                     )),
