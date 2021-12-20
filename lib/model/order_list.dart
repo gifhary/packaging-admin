@@ -30,21 +30,29 @@ class OrderData {
   String? deliveryNoteConfirmedDate;
   GermanData? germanData;
   Map<String, MachineData> machineList;
+  String? dateCustomerApprove;
+  String? trackingNumber;
+  String? deliveryDate;
 
-  OrderData({
-    this.hsDiscount,
-    required this.orderTitle,
-    required this.approvedByCustomer,
-    required this.confirmedBySales,
-    required this.delivered,
-    this.approver,
-    required this.orderTime,
-    this.deliveryNoteConfirmedDate,
-    required this.germanData,
-    required this.machineList,
-  });
+  OrderData(
+      {this.hsDiscount,
+      required this.orderTitle,
+      required this.approvedByCustomer,
+      required this.confirmedBySales,
+      required this.delivered,
+      this.approver,
+      required this.orderTime,
+      this.deliveryNoteConfirmedDate,
+      required this.germanData,
+      required this.machineList,
+      this.dateCustomerApprove,
+      this.trackingNumber,
+      this.deliveryDate});
 
   factory OrderData.fromMap(Map<String, dynamic> json) => OrderData(
+          deliveryDate: json['deliveryDate'],
+          trackingNumber: json['trackingNumber'],
+          dateCustomerApprove: json['dateCustomerApprove'],
           germanData: json['germanData'] != null
               ? GermanData.fromMap(json['germanData'])
               : null,
@@ -84,6 +92,9 @@ class OrderData {
           });
 
   Map<String, dynamic> toMap() => {
+        'deliveryDate': deliveryDate,
+        'trackingNumber': trackingNumber,
+        'dateCustomerApprove': dateCustomerApprove,
         'germanData': germanData?.toMap() ?? null,
         'hsDiscount': hsDiscount,
         'approver': approver,

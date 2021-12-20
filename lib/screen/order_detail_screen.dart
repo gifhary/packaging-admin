@@ -60,6 +60,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   TextEditingController _dnSi = TextEditingController();
   TextEditingController _invoice = TextEditingController();
 
+  TextEditingController _trackingId = TextEditingController();
+  TextEditingController _deliveryDate = TextEditingController();
+
   @override
   void initState() {
     _editItem = _item;
@@ -75,6 +78,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       _orderConfirm.text = _item.orderData.germanData?.orderConfirm.text ?? ' ';
       _dnSi.text = _item.orderData.germanData?.dnSi ?? ' ';
       _invoice.text = _item.orderData.germanData?.invoice ?? ' ';
+    }
+
+    if (_item.orderData.trackingNumber != null &&
+        _item.orderData.deliveryDate != null) {
+      _trackingId.text = _item.orderData.trackingNumber ?? '';
+      _deliveryDate.text = _item.orderData.deliveryDate ?? '';
     }
 
     super.initState();
@@ -168,6 +177,20 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         .update(_editItem.orderData.toMap())
         .then((value) {
       debugPrint('quotation completed');
+      Get.back();
+    });
+  }
+
+  _submitDeliveryInfo() {
+    if (_trackingId.text.isEmpty) return;
+    if (_deliveryDate.text.isEmpty) return;
+
+    order.child('${Encrypt.heh(_user.email)}/${_item.orderId}').update({
+      'trackingNumber': _trackingId.text,
+      'deliveryDate': _deliveryDate.text,
+      'delivered': true,
+    }).then((value) {
+      debugPrint('tracking data submitter');
       Get.back();
     });
   }
@@ -757,6 +780,48 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           ),
                         ],
                       )),
+                ),
+              ),
+              Visibility(
+                visible: _item.orderData.approvedByCustomer &&
+                    _item.orderData.confirmedBySales,
+                child: Container(
+                  margin: EdgeInsets.symmetric(vertical: 20),
+                  padding: EdgeInsets.all(30),
+                  width: _width * 0.75,
+                  decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border.all(
+                          color: const Color.fromRGBO(160, 152, 128, 1))),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IniTextField(
+                        readOnly: _item.orderData.trackingNumber != null,
+                        controller: _trackingId,
+                        label: 'Tracking ID:',
+                        hintText: 'Enter tracking number',
+                      ),
+                      IniTextField(
+                        readOnly: _item.orderData.deliveryDate != null,
+                        controller: _deliveryDate,
+                        label: 'Delivery Date:',
+                        hintText: 'DD-MM-YYY',
+                      ),
+                      SizedBox(height: 20),
+                      Visibility(
+                        visible: _item.orderData.trackingNumber == null &&
+                            _item.orderData.deliveryDate == null,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            primary: const Color.fromRGBO(160, 152, 128, 1),
+                          ),
+                          onPressed: _submitDeliveryInfo,
+                          child: const Text('Submit'),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               //TODO delivery note
