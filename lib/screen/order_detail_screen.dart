@@ -13,6 +13,7 @@ import 'package:admin/widget/ini_text_field.dart';
 import 'package:admin/widget/machine_table.dart';
 import 'package:admin/widget/machine_table_invoice.dart';
 import 'package:admin/widget/machine_table_note.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -358,21 +359,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                   TableRow(children: [
                                     Padding(
                                       padding: const EdgeInsets.only(top: 8.0),
-                                      child: Text('Delivery Date',
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.bold)),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 8.0),
-                                      child: Text(
-                                        DateTime.now().toString().split(' ')[0],
-                                        style: TextStyle(color: Colors.black),
-                                      ),
-                                    )
-                                  ]),
-                                  TableRow(children: [
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 8.0),
                                       child: Text('Goods Ship To',
                                           style: TextStyle(
                                               fontWeight: FontWeight.bold)),
@@ -496,15 +482,33 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                             children: [
                               Visibility(
                                 visible: _item.orderData.approvedByCustomer,
-                                child: Row(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
-                                      'Approving customer:',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold),
+                                    Row(
+                                      children: [
+                                        Text(
+                                          'Approving customer:',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        SizedBox(width: 50),
+                                        Text(_item.orderData.approver ?? ''),
+                                      ],
                                     ),
-                                    SizedBox(width: 50),
-                                    Text(_item.orderData.approver ?? ''),
+                                    Row(
+                                      children: [
+                                        Text(
+                                          'Date of Approval:',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        SizedBox(width: 70),
+                                        Text(_item.orderData
+                                                .dateCustomerApprove ??
+                                            ''),
+                                      ],
+                                    ),
                                   ],
                                 ),
                               ),
@@ -970,10 +974,14 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           children: [
                             Column(
                               children: [
-                                Image.network(
-                                  _salesAdmin.signature,
-                                  height: 100,
+                                CachedNetworkImage(
                                   fit: BoxFit.contain,
+                                  imageUrl: _salesAdmin.signature,
+                                  height: 100,
+                                  placeholder: (context, url) => Center(
+                                      child: CircularProgressIndicator()),
+                                  errorWidget: (context, url, error) =>
+                                      Icon(Icons.error),
                                 ),
                                 Container(
                                   margin: EdgeInsets.all(15),
@@ -1236,10 +1244,16 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                     children: [
                                       Column(
                                         children: [
-                                          Image.network(
-                                            _director.signature,
-                                            height: 100,
+                                          CachedNetworkImage(
                                             fit: BoxFit.contain,
+                                            imageUrl: _director.signature,
+                                            height: 100,
+                                            placeholder: (context, url) => Center(
+                                                child:
+                                                    CircularProgressIndicator()),
+                                            errorWidget:
+                                                (context, url, error) =>
+                                                    Icon(Icons.error),
                                           ),
                                           Container(
                                             margin: EdgeInsets.all(15),
@@ -1256,10 +1270,16 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                       ),
                                       Column(
                                         children: [
-                                          Image.network(
-                                            _salesManager.signature,
-                                            height: 100,
+                                          CachedNetworkImage(
                                             fit: BoxFit.contain,
+                                            imageUrl: _salesManager.signature,
+                                            height: 100,
+                                            placeholder: (context, url) => Center(
+                                                child:
+                                                    CircularProgressIndicator()),
+                                            errorWidget:
+                                                (context, url, error) =>
+                                                    Icon(Icons.error),
                                           ),
                                           Container(
                                             margin: EdgeInsets.all(15),

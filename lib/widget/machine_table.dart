@@ -57,7 +57,7 @@ class _MachineTableState extends State<MachineTable> {
               ],
             ),
           ),
-          DataTable(dataRowHeight: 70, columns: [
+          DataTable(dataRowHeight: 75, columns: [
             DataColumn(
               label: Text(
                 'Item',
@@ -107,7 +107,7 @@ class _MachineTableState extends State<MachineTable> {
                       SizedBox(height: 5),
                       widget.editable
                           ? SizedBox(
-                              width: 150,
+                              width: 200,
                               height: 22,
                               child: AnotherTextField(
                                 hintText: 'Enter time',
@@ -139,7 +139,10 @@ class _MachineTableState extends State<MachineTable> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(widget.machineData.partRequest[key]!.partNumber),
+                      SizedBox(
+                          width: 130,
+                          child: Text(
+                              widget.machineData.partRequest[key]!.partNumber)),
                       widget.editable
                           ? SizedBox(
                               width: 130,
@@ -147,7 +150,7 @@ class _MachineTableState extends State<MachineTable> {
                               child: AnotherTextField(
                                 hintText: 'HS code',
                                 onChanged: (val) {
-                                  _editData.partRequest[key]?.availability =
+                                  _editData.partRequest[key]!.hsPartNumber =
                                       val;
                                 },
                               ),
@@ -162,11 +165,11 @@ class _MachineTableState extends State<MachineTable> {
                   )),
                   DataCell(Text(widget.machineData.partRequest[key]!.quantity
                       .toString())),
-                  DataCell(Text('0.00')),
+                  DataCell(SizedBox(width: 70, child: Text('0.00'))),
                   DataCell(
                     widget.editable
                         ? SizedBox(
-                            width: 150,
+                            width: 140,
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
@@ -197,22 +200,25 @@ class _MachineTableState extends State<MachineTable> {
                               ],
                             ),
                           )
-                        : Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('IDR ' +
-                                  cur.format((widget.machineData
-                                          .partRequest[key]?.price ??
-                                      0))),
-                              Text(
-                                'EUR ' +
+                        : SizedBox(
+                            width: 140,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('IDR ' +
                                     cur.format((widget.machineData
-                                            .partRequest[key]?.eurPrice ??
-                                        0)),
-                                style: TextStyle(color: Colors.blue),
-                              ),
-                            ],
+                                            .partRequest[key]?.price ??
+                                        0))),
+                                Text(
+                                  'EUR ' +
+                                      cur.format((widget.machineData
+                                              .partRequest[key]?.eurPrice ??
+                                          0)),
+                                  style: TextStyle(color: Colors.blue),
+                                ),
+                              ],
+                            ),
                           ),
                   ),
                   DataCell(SizedBox(
