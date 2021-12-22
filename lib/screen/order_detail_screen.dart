@@ -7,7 +7,9 @@ import 'package:admin/model/item.dart';
 import 'package:admin/model/payment_proof.dart';
 import 'package:admin/model/staff.dart';
 import 'package:admin/model/user.dart';
+import 'package:admin/route/route_constant.dart';
 import 'package:admin/utils/encrypt.dart';
+import 'package:admin/utils/status.dart';
 import 'package:admin/widget/another_text_field.dart';
 import 'package:admin/widget/ini_text_field.dart';
 import 'package:admin/widget/machine_table.dart';
@@ -253,7 +255,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                     fontSize: 30, fontWeight: FontWeight.bold),
                               ),
                               Text(
-                                'Order: ${_item.orderId} ',
+                                _item.orderData.confirmedBySales &&
+                                        _item.orderData.approvedByCustomer
+                                    ? 'Order: KHS${_item.orderId} '
+                                    : 'Order: QO${_item.orderId} ',
                                 style: TextStyle(fontSize: 30),
                               ),
                             ],
@@ -852,7 +857,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                   fontSize: 30, fontWeight: FontWeight.bold),
                             ),
                             Text(
-                              'Order: ${_item.orderId}',
+                              'Order: DN${_item.orderId}',
                               style: TextStyle(fontSize: 30),
                             ),
                           ],
@@ -1063,7 +1068,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                   fontSize: 30, fontWeight: FontWeight.bold),
                             ),
                             Text(
-                              'Order: ${_item.orderId}',
+                              'Order: IN${_item.orderId}',
                               style: TextStyle(fontSize: 30),
                             ),
                           ],
@@ -1383,7 +1388,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                   fontSize: 30, fontWeight: FontWeight.bold),
                             ),
                             Text(
-                              'Order: ${_item.orderId}',
+                              'Order: PP${_item.orderId}',
                               style: TextStyle(fontSize: 30),
                             ),
                           ],
