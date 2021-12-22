@@ -1,5 +1,17 @@
 import 'dart:convert';
 
+class PaymentProofList {
+  Map<String, PaymentProof> paymentProof;
+  PaymentProofList({
+    required this.paymentProof,
+  });
+
+  factory PaymentProofList.fromMap(Map<String, dynamic> map) =>
+      PaymentProofList(paymentProof: {
+        for (String key in map.keys) key: PaymentProof.fromMap(map[key])
+      });
+}
+
 class PaymentProof {
   String imgUrl;
   String paymentDate;
