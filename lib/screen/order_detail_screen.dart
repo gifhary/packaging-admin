@@ -73,12 +73,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     if (_item.orderData.confirmedBySales) {
       _calculateTotal();
 
-      _germanOffer.text = _item.orderData.germanData?.germanOffered.text ?? ' ';
+      _germanOffer.text = _item.orderData.germanData?.germanOffered.text ?? '';
       _purchaseOrder.text =
-          _item.orderData.germanData?.purchaseOrder.text ?? ' ';
-      _orderConfirm.text = _item.orderData.germanData?.orderConfirm.text ?? ' ';
-      _dnSi.text = _item.orderData.germanData?.dnSi ?? ' ';
-      _invoice.text = _item.orderData.germanData?.invoice ?? ' ';
+          _item.orderData.germanData?.purchaseOrder.text ?? '';
+      _orderConfirm.text = _item.orderData.germanData?.orderConfirm.text ?? '';
+      _dnSi.text = _item.orderData.germanData?.dnSi ?? '';
+      _invoice.text = _item.orderData.germanData?.invoice ?? '';
     }
 
     if (_item.orderData.trackingNumber != null &&
@@ -160,7 +160,17 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   _approve() {
     _editItem.orderData.confirmedBySales = true;
 
-    _editItem.orderData.germanData = GermanData(
+    order
+        .child('${Encrypt.heh(_user.email)}/${_item.orderId}')
+        .update(_editItem.orderData.toMap())
+        .then((value) {
+      debugPrint('quotation completed');
+      Get.back();
+    });
+  }
+
+  _saveCompanyData() {
+    var data = GermanData(
         germanOffered:
             DataGroup(text: _germanOffer.text, date: DateTime.now().toString()),
         purchaseOrder: DataGroup(
@@ -172,9 +182,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
 
     order
         .child('${Encrypt.heh(_user.email)}/${_item.orderId}')
-        .update(_editItem.orderData.toMap())
-        .then((value) {
-      debugPrint('quotation completed');
+        .update({'germanData': data.toMap()}).then((value) {
+      debugPrint('german data completed');
       Get.back();
     });
   }
@@ -617,135 +626,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                               ),
                             ],
                           ),
-                          SizedBox(height: 20),
-                          Container(
-                            margin: EdgeInsets.symmetric(vertical: 20),
-                            padding: EdgeInsets.all(30),
-                            width: _width * 0.75,
-                            decoration: BoxDecoration(
-                                color: Colors.white,
-                                border: Border.all(
-                                    color: const Color.fromRGBO(
-                                        160, 152, 128, 1))),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(10),
-                                  width: double.infinity,
-                                  color:
-                                      const Color.fromRGBO(160, 152, 128, 0.16),
-                                  child: Center(
-                                    child: Text(
-                                      'KHS ID - KHS Germany',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: const Color.fromRGBO(
-                                            117, 111, 99, 1),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 100),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          SizedBox(
-                                            width: 500,
-                                            child: IniTextField(
-                                              controller: _germanOffer,
-                                              readOnly: _item
-                                                  .orderData.confirmedBySales,
-                                              label: "German Offered",
-                                              hintText: 'Enter German Offered',
-                                            ),
-                                          ),
-                                          Text(_item.orderData.confirmedBySales
-                                              ? _item.orderData.germanData
-                                                      ?.germanOffered.date ??
-                                                  ''
-                                              : DateFormat('dd-MM-yyyy')
-                                                  .format(DateTime.now()))
-                                        ],
-                                      ),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          SizedBox(
-                                            width: 500,
-                                            child: IniTextField(
-                                              controller: _purchaseOrder,
-                                              readOnly: _item
-                                                  .orderData.confirmedBySales,
-                                              label: "Purchased Order",
-                                              hintText: 'Enter PO',
-                                            ),
-                                          ),
-                                          Text(_item.orderData.confirmedBySales
-                                              ? _item.orderData.germanData
-                                                      ?.purchaseOrder.date ??
-                                                  ''
-                                              : DateFormat('dd-MM-yyyy')
-                                                  .format(DateTime.now()))
-                                        ],
-                                      ),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          SizedBox(
-                                            width: 500,
-                                            child: IniTextField(
-                                              controller: _orderConfirm,
-                                              readOnly: _item
-                                                  .orderData.confirmedBySales,
-                                              label: "Order Confirmation",
-                                              hintText: 'Enter OC',
-                                            ),
-                                          ),
-                                          Text(_item.orderData.confirmedBySales
-                                              ? _item.orderData.germanData
-                                                      ?.orderConfirm.date ??
-                                                  ''
-                                              : DateFormat('dd-MM-yyyy')
-                                                  .format(DateTime.now()))
-                                        ],
-                                      ),
-                                      SizedBox(
-                                        width: 500,
-                                        child: IniTextField(
-                                          controller: _dnSi,
-                                          readOnly:
-                                              _item.orderData.confirmedBySales,
-                                          label: "DN-SI",
-                                          hintText:
-                                              'Enter Delivery Note issued by HQ',
-                                        ),
-                                      ),
-                                      SizedBox(
-                                        width: 500,
-                                        child: IniTextField(
-                                          controller: _invoice,
-                                          readOnly:
-                                              _item.orderData.confirmedBySales,
-                                          label: "Invoice",
-                                          hintText: 'Enter KHS Invoice',
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                )
-                              ],
-                            ),
-                          ),
                           SizedBox(height: 80),
                           Visibility(
                             visible: !_item.orderData.confirmedBySales,
@@ -787,6 +667,133 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       )),
                 ),
               ),
+              //TODO company data
+              Container(
+                margin: EdgeInsets.symmetric(vertical: 20),
+                padding: EdgeInsets.all(30),
+                width: _width * 0.75,
+                decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border.all(
+                        color: const Color.fromRGBO(160, 152, 128, 1))),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      width: double.infinity,
+                      color: const Color.fromRGBO(160, 152, 128, 0.16),
+                      child: Center(
+                        child: Text(
+                          'KHS ID - KHS Germany',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: const Color.fromRGBO(117, 111, 99, 1),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 100),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              SizedBox(
+                                width: 500,
+                                child: IniTextField(
+                                  controller: _germanOffer,
+                                  readOnly: _item.orderData.germanData != null,
+                                  label: "German Offered",
+                                  hintText: 'Enter German Offered',
+                                ),
+                              ),
+                              Text(_item.orderData.germanData?.germanOffered
+                                      .date ??
+                                  DateFormat('dd-MM-yyyy')
+                                      .format(DateTime.now()))
+                            ],
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              SizedBox(
+                                width: 500,
+                                child: IniTextField(
+                                  controller: _purchaseOrder,
+                                  readOnly: _item.orderData.germanData != null,
+                                  label: "Purchased Order",
+                                  hintText: 'Enter PO',
+                                ),
+                              ),
+                              Text(_item.orderData.germanData?.purchaseOrder
+                                      .date ??
+                                  DateFormat('dd-MM-yyyy')
+                                      .format(DateTime.now()))
+                            ],
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              SizedBox(
+                                width: 500,
+                                child: IniTextField(
+                                  controller: _orderConfirm,
+                                  readOnly: _item.orderData.germanData != null,
+                                  label: "Order Confirmation",
+                                  hintText: 'Enter OC',
+                                ),
+                              ),
+                              Text(_item.orderData.germanData?.orderConfirm
+                                      .date ??
+                                  DateFormat('dd-MM-yyyy')
+                                      .format(DateTime.now()))
+                            ],
+                          ),
+                          SizedBox(
+                            width: 500,
+                            child: IniTextField(
+                              controller: _dnSi,
+                              readOnly: _item.orderData.germanData != null,
+                              label: "DN-SI",
+                              hintText: 'Enter Delivery Note issued by HQ',
+                            ),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              SizedBox(
+                                width: 500,
+                                child: IniTextField(
+                                  controller: _invoice,
+                                  readOnly: _item.orderData.germanData != null,
+                                  label: "Invoice",
+                                  hintText: 'Enter KHS Invoice',
+                                ),
+                              ),
+                              Visibility(
+                                visible: _item.orderData.germanData == null,
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    primary:
+                                        const Color.fromRGBO(160, 152, 128, 1),
+                                  ),
+                                  onPressed: _saveCompanyData,
+                                  child: const Text('Save'),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    )
+                  ],
+                ),
+              ),
+              //TODO tracking id input
               Visibility(
                 visible: _item.orderData.approvedByCustomer &&
                     _item.orderData.confirmedBySales,
