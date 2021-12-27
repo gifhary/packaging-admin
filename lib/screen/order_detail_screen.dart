@@ -7,9 +7,7 @@ import 'package:admin/model/item.dart';
 import 'package:admin/model/payment_proof.dart';
 import 'package:admin/model/staff.dart';
 import 'package:admin/model/user.dart';
-import 'package:admin/route/route_constant.dart';
 import 'package:admin/utils/encrypt.dart';
-import 'package:admin/utils/status.dart';
 import 'package:admin/widget/another_text_field.dart';
 import 'package:admin/widget/ini_text_field.dart';
 import 'package:admin/widget/machine_table.dart';
@@ -163,15 +161,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     _editItem.orderData.confirmedBySales = true;
 
     _editItem.orderData.germanData = GermanData(
-        germanOffered: DataGroup(
-            text: _germanOffer.text,
-            date: DateFormat('dd-MM-yyyy').format(DateTime.now())),
+        germanOffered:
+            DataGroup(text: _germanOffer.text, date: DateTime.now().toString()),
         purchaseOrder: DataGroup(
-            text: _purchaseOrder.text,
-            date: DateFormat('dd-MM-yyyy').format(DateTime.now())),
+            text: _purchaseOrder.text, date: DateTime.now().toString()),
         orderConfirm: DataGroup(
-            text: _orderConfirm.text,
-            date: DateFormat('dd-MM-yyyy').format(DateTime.now())),
+            text: _orderConfirm.text, date: DateTime.now().toString()),
         dnSi: _dnSi.text,
         invoice: _invoice.text);
 
@@ -192,7 +187,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       'trackingNumber': _trackingId.text,
       'deliveryDate': _deliveryDate.text,
       'delivered': true,
-      'deliveryInputDateTime': DateFormat('dd-MM-yyyy').format(DateTime.now()),
+      'deliveryInputDateTime': DateTime.now().toString(),
     }).then((value) {
       debugPrint('tracking data submitter');
       Get.back();

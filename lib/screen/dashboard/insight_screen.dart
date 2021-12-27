@@ -44,6 +44,9 @@ class _InsightScreenState extends State<InsightScreen> {
           _orderList.putIfAbsent(key, () => OrderList.fromMap(val)));
     }
 
+    _note = await _getDNList();
+    debugPrint(_note.isEmpty.toString());
+
     var prf = await _getPaymentList();
     if (prf.exists) {
       Map<dynamic, dynamic> proofs = prf.value as Map;
@@ -93,8 +96,8 @@ class _InsightScreenState extends State<InsightScreen> {
       'DN SI',
       'KHS Invoice',
       'Shipping',
-      'Lead Time to Indonesia',
-      'Lead Time to Customer',
+      'Lead Time to Indonesia (DAYS)',
+      'Lead Time to Customer (DAYS)'
     ];
     sheetObject.insertRowIterables(columnName, 0);
 
@@ -125,8 +128,13 @@ class _InsightScreenState extends State<InsightScreen> {
             item.orderData.germanData?.invoice ?? '-',
             item.orderData.trackingNumber ?? '-',
             _daysBetween(
+                    DateTime.parse(
+                        item.orderData.germanData!.germanOffered.date),
+                    DateTime.parse(item.orderData.deliveryInputDateTime!)) +
+                'days',
+            _daysBetween(
                 DateTime.parse(item.orderData.germanData!.germanOffered.date),
-                DateTime.parse(item.orderData.deliveryInputDateTime!)),
+                DateTime.parse(_note[item.orderId]!.date))
           ];
 
           sheetObject.appendRow(dataRow);
@@ -165,7 +173,17 @@ class _InsightScreenState extends State<InsightScreen> {
   Future<Map<String, DeliveryNote>> _getDNList() async {
     Map<String, DeliveryNote> data = Map();
 
-    note.get().then((value) {});
+    var vallueueue = await note.get();
+    if (vallueueue.exists) {
+      Map<dynamic, dynamic> notes = vallueueue.value as Map;
+      notes.forEach((key, val) {
+        Map<dynamic, dynamic> ha = val as Map;
+        ha.forEach((k, v) {
+          debugPrint(k);
+          data.putIfAbsent(k, () => DeliveryNote.fromMap(v));
+        });
+      });
+    }
 
     return data;
   }
