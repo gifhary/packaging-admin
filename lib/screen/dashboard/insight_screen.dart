@@ -1,4 +1,5 @@
 import 'package:admin/constant/db_constant.dart';
+import 'package:admin/model/delivery_note.dart';
 import 'package:admin/model/item.dart';
 import 'package:admin/model/order_list.dart';
 import 'package:admin/model/payment_proof.dart';
@@ -15,13 +16,21 @@ class InsightScreen extends StatefulWidget {
 class _InsightScreenState extends State<InsightScreen> {
   final order = FirebaseDatabase.instance.ref(DbConstant.order);
   final paymentProof = FirebaseDatabase.instance.ref(DbConstant.paymentProof);
+  final note = FirebaseDatabase.instance.ref(DbConstant.deliveryNote);
 
   Map<String, OrderList> _orderList = Map();
   Map<String, PaymentProofList> _proofList = Map();
+  Map<String, DeliveryNote> _note = Map();
 
   List<Item> _orderItems = [];
 
   bool _loading = false;
+
+  String _daysBetween(DateTime from, DateTime to) {
+    from = DateTime(from.year, from.month, from.day);
+    to = DateTime(to.year, to.month, to.day);
+    return (to.difference(from).inHours / 24).round().toString();
+  }
 
   _download() async {
     setState(() {
@@ -66,7 +75,9 @@ class _InsightScreenState extends State<InsightScreen> {
       'OC',
       'DN SI',
       'KHS Invoice',
-      'Shipping'
+      'Shipping',
+      'Lead Time to Indonesia',
+      'Lead Time to Customer',
     ];
     sheetObject.insertRowIterables(columnName, 0);
 
@@ -95,7 +106,10 @@ class _InsightScreenState extends State<InsightScreen> {
             item.orderData.germanData?.orderConfirm.text ?? '-',
             item.orderData.germanData?.dnSi ?? '-',
             item.orderData.germanData?.invoice ?? '-',
-            item.orderData.trackingNumber
+            item.orderData.trackingNumber ?? '-',
+            _daysBetween(
+                DateTime.parse(item.orderData.germanData!.germanOffered.date),
+                DateTime.parse(item.orderData.deliveryInputDateTime!)),
           ];
 
           sheetObject.appendRow(dataRow);
@@ -129,6 +143,14 @@ class _InsightScreenState extends State<InsightScreen> {
 
   Future<DataSnapshot> _getPaymentList() async {
     return await paymentProof.get();
+  }
+
+  Future<Map<String, DeliveryNote>> _getDNList() async {
+    Map<String, DeliveryNote> data = Map();
+
+    note.get().then((value) {});
+
+    return data;
   }
 
   @override

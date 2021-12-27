@@ -192,6 +192,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       'trackingNumber': _trackingId.text,
       'deliveryDate': _deliveryDate.text,
       'delivered': true,
+      'deliveryInputDateTime': DateFormat('dd-MM-yyyy').format(DateTime.now()),
     }).then((value) {
       debugPrint('tracking data submitter');
       Get.back();
