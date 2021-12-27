@@ -27,29 +27,30 @@ class AuthScreen extends StatelessWidget {
 
     return Scaffold(
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 200,
-              child: IniTextField(
+        child: SizedBox(
+          width: 200,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IniTextField(
                 obscureText: true,
                 label: "Password",
                 hintText: 'Password',
                 controller: _passCtr,
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 20, bottom: 100),
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  primary: const Color.fromRGBO(160, 152, 128, 1),
+              Padding(
+                padding: const EdgeInsets.only(top: 20, bottom: 100),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    primary: const Color.fromRGBO(160, 152, 128, 1),
+                  ),
+                  onPressed: _verify,
+                  child: const Text('Verify'),
                 ),
-                onPressed: _verify,
-                child: const Text('Verify'),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

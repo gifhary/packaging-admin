@@ -60,13 +60,15 @@ class _OrderScreenState extends State<OrderScreen> {
 
   _getOrderList() {
     order.get().then((value) {
-      debugPrint(value.value.toString());
-      Map<dynamic, dynamic> values = value.value as Map;
+      if (value.exists) {
+        debugPrint(value.value.toString());
+        Map<dynamic, dynamic> values = value.value as Map;
 
-      values.forEach(
-          (key, val) => _list.putIfAbsent(key, () => OrderList.fromMap(val)));
-      _getUsers();
-      debugPrint('Hahaha ' + _list.length.toString());
+        values.forEach(
+            (key, val) => _list.putIfAbsent(key, () => OrderList.fromMap(val)));
+        _getUsers();
+        debugPrint('Hahaha ' + _list.length.toString());
+      }
     });
   }
 

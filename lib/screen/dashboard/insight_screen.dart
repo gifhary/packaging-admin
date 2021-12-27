@@ -6,6 +6,7 @@ import 'package:admin/model/payment_proof.dart';
 import 'package:excel/excel.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 class InsightScreen extends StatefulWidget {
@@ -37,17 +38,33 @@ class _InsightScreenState extends State<InsightScreen> {
       _loading = true;
     });
     var ord = await _getOrderList();
-    Map<dynamic, dynamic> orders = ord.value as Map;
-    orders.forEach((key, val) =>
-        _orderList.putIfAbsent(key, () => OrderList.fromMap(val)));
+    if (ord.exists) {
+      Map<dynamic, dynamic> orders = ord.value as Map;
+      orders.forEach((key, val) =>
+          _orderList.putIfAbsent(key, () => OrderList.fromMap(val)));
+    }
 
     var prf = await _getPaymentList();
-    Map<dynamic, dynamic> proofs = prf.value as Map;
-    proofs.forEach((key, value) =>
-        _proofList.putIfAbsent(key, () => PaymentProofList.fromMap(value)));
+    if (prf.exists) {
+      Map<dynamic, dynamic> proofs = prf.value as Map;
+      proofs.forEach((key, value) =>
+          _proofList.putIfAbsent(key, () => PaymentProofList.fromMap(value)));
 
-    _orderItems = _getCompletedOnly(_orderList, _proofList);
-    _writeToExcel(_orderItems);
+      _orderItems = _getCompletedOnly(_orderList, _proofList);
+      _writeToExcel(_orderItems);
+    } else {
+      setState(() {
+        _loading = false;
+      });
+      Get.defaultDialog(
+          titleStyle: const TextStyle(color: Color.fromRGBO(117, 111, 99, 1)),
+          title: "No Data",
+          middleText: "Currently there's no data, check again later",
+          onConfirm: Get.back,
+          buttonColor: const Color.fromRGBO(117, 111, 99, 1),
+          confirmTextColor: Colors.white,
+          textConfirm: 'OK');
+    }
   }
 
   _writeToExcel(List<Item> nyeh) {
