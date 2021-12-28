@@ -43,27 +43,32 @@ class _SettingScreenState extends State<SettingScreen> {
   }
 
   _updateNameAndSignature(String position, String name, Uint8List image) async {
-    final storage = FirebaseStorage.instance
-        .ref('companyAsset/$position-${name.replaceAll(' ', '-')}.png');
+    if (image.isNotEmpty) {
+      final storage = FirebaseStorage.instance
+          .ref('companyAsset/$position-${name.replaceAll(' ', '-')}.png');
 
-    TaskSnapshot uploadTask = await storage.putData(
-        image, SettableMetadata(contentType: 'image/png'));
+      TaskSnapshot uploadTask = await storage.putData(
+          image, SettableMetadata(contentType: 'image/png'));
 
-    uploadTask.ref.getDownloadURL().then((url) {
-      staff
-          .child(position)
-          .update(Staff(name: name, signature: url).toMap())
-          .then((value) {
-        Get.defaultDialog(
-            titleStyle: const TextStyle(color: Color.fromRGBO(117, 111, 99, 1)),
-            title: "Success",
-            middleText: "Data updated successfuly",
-            onConfirm: Get.back,
-            buttonColor: const Color.fromRGBO(117, 111, 99, 1),
-            confirmTextColor: Colors.white,
-            textConfirm: 'OK');
+      uploadTask.ref.getDownloadURL().then((url) {
+        staff
+            .child(position)
+            .update(Staff(name: name, signature: url).toMap())
+            .then((value) {
+          Get.defaultDialog(
+              titleStyle:
+                  const TextStyle(color: Color.fromRGBO(117, 111, 99, 1)),
+              title: "Success",
+              middleText: "Data updated successfuly",
+              onConfirm: Get.back,
+              buttonColor: const Color.fromRGBO(117, 111, 99, 1),
+              confirmTextColor: Colors.white,
+              textConfirm: 'OK');
+        });
       });
-    });
+    } else {
+      debugPrint('image is empty');
+    }
   }
 
   _getStaff() {
