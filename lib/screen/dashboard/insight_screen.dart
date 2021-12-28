@@ -128,12 +128,10 @@ class _InsightScreenState extends State<InsightScreen> {
             item.orderData.germanData?.invoice ?? '-',
             item.orderData.trackingNumber ?? '-',
             _daysBetween(
-                    DateTime.parse(
-                        item.orderData.germanData!.germanOffered.date),
-                    DateTime.parse(item.orderData.deliveryInputDateTime!)) +
-                'days',
+                DateTime.parse(item.orderData.germanData!.germanOffered.date!),
+                DateTime.parse(item.orderData.deliveryInputDateTime!)),
             _daysBetween(
-                DateTime.parse(item.orderData.germanData!.germanOffered.date),
+                DateTime.parse(item.orderData.germanData!.germanOffered.date!),
                 DateTime.parse(_note[item.orderId]!.date))
           ];
 

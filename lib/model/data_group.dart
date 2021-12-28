@@ -2,10 +2,10 @@ import 'dart:convert';
 
 class DataGroup {
   String text;
-  String date;
+  String? date;
   DataGroup({
     required this.text,
-    required this.date,
+    this.date,
   });
 
   DataGroup copyWith({
@@ -27,8 +27,8 @@ class DataGroup {
 
   factory DataGroup.fromMap(Map<String, dynamic> map) {
     return DataGroup(
-      text: map['text'] ?? '',
-      date: map['date'] ?? '',
+      text: map['text'],
+      date: map['date'] ?? null,
     );
   }
 

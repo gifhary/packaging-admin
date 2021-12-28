@@ -170,21 +170,37 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   }
 
   _saveCompanyData() {
-    var data = GermanData(
-        germanOffered:
-            DataGroup(text: _germanOffer.text, date: DateTime.now().toString()),
+    var data;
+
+    data = GermanData(
+        germanOffered: DataGroup(
+            text: _germanOffer.text,
+            date: _item.orderData.germanData!.germanOffered.date ??
+                DateTime.now().toString()),
         purchaseOrder: DataGroup(
-            text: _purchaseOrder.text, date: DateTime.now().toString()),
+            text: _purchaseOrder.text,
+            date: _item.orderData.germanData!.purchaseOrder.date ??
+                DateTime.now().toString()),
         orderConfirm: DataGroup(
-            text: _orderConfirm.text, date: DateTime.now().toString()),
+            text: _orderConfirm.text,
+            date: _item.orderData.germanData!.orderConfirm.date ??
+                DateTime.now().toString()),
         dnSi: _dnSi.text,
         invoice: _invoice.text);
 
     order
         .child('${Encrypt.heh(_user.email)}/${_item.orderId}')
         .update({'germanData': data.toMap()}).then((value) {
-      debugPrint('german data completed');
-      Get.back();
+      Get.defaultDialog(
+          titleStyle: const TextStyle(color: Color.fromRGBO(117, 111, 99, 1)),
+          title: "Success",
+          middleText: _item.orderData.germanData != null
+              ? 'Data updated'
+              : 'Data saved',
+          onConfirm: Get.back,
+          buttonColor: const Color.fromRGBO(117, 111, 99, 1),
+          confirmTextColor: Colors.white,
+          textConfirm: 'OK');
     });
   }
 
@@ -705,7 +721,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                 width: 500,
                                 child: IniTextField(
                                   controller: _germanOffer,
-                                  readOnly: _item.orderData.germanData != null,
                                   label: "German Offered",
                                   hintText: 'Enter German Offered',
                                 ),
@@ -723,7 +738,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                 width: 500,
                                 child: IniTextField(
                                   controller: _purchaseOrder,
-                                  readOnly: _item.orderData.germanData != null,
                                   label: "Purchased Order",
                                   hintText: 'Enter PO',
                                 ),
@@ -741,7 +755,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                 width: 500,
                                 child: IniTextField(
                                   controller: _orderConfirm,
-                                  readOnly: _item.orderData.germanData != null,
                                   label: "Order Confirmation",
                                   hintText: 'Enter OC',
                                 ),
@@ -756,7 +769,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                             width: 500,
                             child: IniTextField(
                               controller: _dnSi,
-                              readOnly: _item.orderData.germanData != null,
                               label: "DN-SI",
                               hintText: 'Enter Delivery Note issued by HQ',
                             ),
@@ -769,21 +781,19 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                 width: 500,
                                 child: IniTextField(
                                   controller: _invoice,
-                                  readOnly: _item.orderData.germanData != null,
                                   label: "Invoice",
                                   hintText: 'Enter KHS Invoice',
                                 ),
                               ),
-                              Visibility(
-                                visible: _item.orderData.germanData == null,
-                                child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    primary:
-                                        const Color.fromRGBO(160, 152, 128, 1),
-                                  ),
-                                  onPressed: _saveCompanyData,
-                                  child: const Text('Save'),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  primary:
+                                      const Color.fromRGBO(160, 152, 128, 1),
                                 ),
+                                onPressed: _saveCompanyData,
+                                child: Text(_item.orderData.germanData != null
+                                    ? 'Update'
+                                    : 'Save'),
                               ),
                             ],
                           ),
