@@ -42,32 +42,41 @@ class _InsightScreenState extends State<InsightScreen> {
       Map<dynamic, dynamic> orders = ord.value as Map;
       orders.forEach((key, val) =>
           _orderList.putIfAbsent(key, () => OrderList.fromMap(val)));
-    }
 
-    _note = await _getDNList();
-    debugPrint(_note.isEmpty.toString());
+      _note = await _getDNList();
+      if (_note.isEmpty) {
+        _noData();
+        return;
+      }
 
-    var prf = await _getPaymentList();
-    if (prf.exists) {
-      Map<dynamic, dynamic> proofs = prf.value as Map;
-      proofs.forEach((key, value) =>
-          _proofList.putIfAbsent(key, () => PaymentProofList.fromMap(value)));
+      var prf = await _getPaymentList();
+      if (prf.exists) {
+        Map<dynamic, dynamic> proofs = prf.value as Map;
+        proofs.forEach((key, value) =>
+            _proofList.putIfAbsent(key, () => PaymentProofList.fromMap(value)));
 
-      _orderItems = _getCompletedOnly(_orderList, _proofList);
-      _writeToExcel(_orderItems);
+        _orderItems = _getCompletedOnly(_orderList, _proofList);
+        _writeToExcel(_orderItems);
+      } else {
+        _noData();
+      }
     } else {
-      setState(() {
-        _loading = false;
-      });
-      Get.defaultDialog(
-          titleStyle: const TextStyle(color: Color.fromRGBO(117, 111, 99, 1)),
-          title: "No Data",
-          middleText: "Currently there's no data, check again later",
-          onConfirm: Get.back,
-          buttonColor: const Color.fromRGBO(117, 111, 99, 1),
-          confirmTextColor: Colors.white,
-          textConfirm: 'OK');
+      _noData();
     }
+  }
+
+  _noData() {
+    setState(() {
+      _loading = false;
+    });
+    Get.defaultDialog(
+        titleStyle: const TextStyle(color: Color.fromRGBO(117, 111, 99, 1)),
+        title: "No Data",
+        middleText: "Currently there's no completed data, check again later",
+        onConfirm: Get.back,
+        buttonColor: const Color.fromRGBO(117, 111, 99, 1),
+        confirmTextColor: Colors.white,
+        textConfirm: 'OK');
   }
 
   _writeToExcel(List<Item> nyeh) {
