@@ -62,6 +62,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   TextEditingController _invoice = TextEditingController();
 
   TextEditingController _trackingId = TextEditingController();
+  TextEditingController _trackingUrl = TextEditingController();
   TextEditingController _deliveryDate = TextEditingController();
 
   @override
@@ -81,8 +82,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       _invoice.text = _item.orderData.germanData?.invoice ?? '';
     }
 
-    if (_item.orderData.trackingNumber != null &&
-        _item.orderData.deliveryDate != null) {
+    if (_item.orderData.trackingNumber != null ||
+        _item.orderData.deliveryDate != null ||
+        _item.orderData.trackingUrl != null) {
+      _trackingUrl.text = _item.orderData.trackingUrl ?? '';
       _trackingId.text = _item.orderData.trackingNumber ?? '';
       _deliveryDate.text = _item.orderData.deliveryDate ?? '';
     }
@@ -159,6 +162,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
 
   _approve() {
     _editItem.orderData.confirmedBySales = true;
+    _editItem.orderData.dateSalesConfirm = DateTime.now().toString();
 
     order
         .child('${Encrypt.heh(_user.email)}/${_item.orderId}')
@@ -214,8 +218,13 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   _submitDeliveryInfo() {
     if (_trackingId.text.isEmpty) return;
     if (_deliveryDate.text.isEmpty) return;
+    if (_trackingUrl.text.isEmpty) return;
+
+    if (!_trackingUrl.text.contains('http'))
+      _trackingUrl.text = 'http://' + _trackingUrl.text;
 
     order.child('${Encrypt.heh(_user.email)}/${_item.orderId}').update({
+      'trackingUrl': _trackingUrl.text,
       'trackingNumber': _trackingId.text,
       'deliveryDate': _deliveryDate.text,
     }).then((value) {
@@ -858,6 +867,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         hintText: 'Enter tracking number',
                       ),
                       IniTextField(
+                        readOnly: _item.orderData.trackingUrl != null,
+                        controller: _trackingUrl,
+                        label: 'Tracking website:',
+                        hintText: 'Enter tracking website',
+                      ),
+                      IniTextField(
                         readOnly: _item.orderData.deliveryDate != null,
                         controller: _deliveryDate,
                         label: 'Delivery Date:',
@@ -865,8 +880,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       ),
                       SizedBox(height: 20),
                       Visibility(
-                        visible: _item.orderData.trackingNumber == null &&
-                            _item.orderData.deliveryDate == null,
+                        visible: _item.orderData.trackingNumber == null ||
+                            _item.orderData.deliveryDate == null ||
+                            _item.orderData.trackingUrl == null,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             primary: const Color.fromRGBO(160, 152, 128, 1),

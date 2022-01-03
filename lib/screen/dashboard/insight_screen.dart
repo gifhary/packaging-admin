@@ -3,6 +3,7 @@ import 'package:admin/model/delivery_note.dart';
 import 'package:admin/model/item.dart';
 import 'package:admin/model/order_list.dart';
 import 'package:admin/model/payment_proof.dart';
+import 'package:admin/model/user.dart';
 import 'package:excel/excel.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -18,10 +19,12 @@ class _InsightScreenState extends State<InsightScreen> {
   final order = FirebaseDatabase.instance.ref(DbConstant.order);
   final paymentProof = FirebaseDatabase.instance.ref(DbConstant.paymentProof);
   final note = FirebaseDatabase.instance.ref(DbConstant.deliveryNote);
+  final user = FirebaseDatabase.instance.ref(DbConstant.user);
 
   Map<String, OrderList> _orderList = Map();
   Map<String, PaymentProofList> _proofList = Map();
   Map<String, DeliveryNote> _note = Map();
+  Map<String, User> _users = Map();
 
   List<Item> _orderItems = [];
 
@@ -46,6 +49,19 @@ class _InsightScreenState extends State<InsightScreen> {
 
       _note = await _getDNList();
       if (_note.isEmpty) {
+        _noData();
+        return;
+      }
+
+      var usrs = await _getUsers();
+      if (usrs.exists) {
+        debugPrint('user exists ${usrs.value}');
+        Map<dynamic, dynamic> usrsmap = usrs.value as Map;
+        usrsmap.forEach((key, value) {
+          _users.putIfAbsent(key, () => User.fromMap(value));
+        });
+        debugPrint('user length ${_users.length}');
+      } else {
         _noData();
         return;
       }
@@ -77,8 +93,8 @@ class _InsightScreenState extends State<InsightScreen> {
     });
     Get.defaultDialog(
         titleStyle: const TextStyle(color: Color.fromRGBO(117, 111, 99, 1)),
-        title: "No Data",
-        middleText: "Currently there's no completed data, check again later",
+        title: "Error",
+        middleText: "Error downloading data or there's no completed order",
         onConfirm: Get.back,
         buttonColor: const Color.fromRGBO(117, 111, 99, 1),
         confirmTextColor: Colors.white,
@@ -90,66 +106,59 @@ class _InsightScreenState extends State<InsightScreen> {
     var sheetObject = excel['Sheet1'];
 
     List<String> columnName = [
+      'Customer',
       'QTY',
-      'NAME PARTS',
-      'PN',
-      'MACHINE DETAILS',
-      'QTNS.',
-      'DEL. TIME',
-      'HS CODE',
-      'Amount per pc IDR',
-      'Total Amount IDR',
-      'PO',
-      'DN',
-      'GERMAN OFFERED',
-      'Amount per pc EUR',
-      'Total Amount EUR',
-      'Disc. 15%',
-      'Total Amount EUR',
-      'PO',
-      'OC',
-      'DN SI',
-      'KHS Invoice',
-      'Shipping',
-      'Lead Time to Indonesia (DAYS)',
-      'Lead Time to Customer (DAYS)'
+      'Spare Part Name',
+      'Spare Part Number',
+      'Machine Type',
+      'HS Code',
+//
+      'Code',
+      'Date Received',
+      'Date Completed',
+      'Delivery estimation',
+//
+      'Code',
+      'Date',
+//
+      'Code',
+      'Date Sent',
+      'Date Confirmed',
+//
+      'Lead Time',
+      'Amount per pc (IDR)',
+      'Total Amount (IDR)'
     ];
-    sheetObject.insertRowIterables(columnName, 0);
+    sheetObject.insertRowIterables(columnName, 1);
 
     for (Item item in nyeh) {
       item.orderData.machineList.forEach((key, machine) {
         machine.partRequest.forEach((key, part) {
           List dataRow = [
+            _users[item.orderId]?.userDetail?.company ?? '-',
             part.quantity,
             part.itemName,
             part.partNumber,
             machine.machineType,
+            part.hsPartNumber,
+            //QO
             'QO' + item.orderId,
+            item.orderData.orderTime,
+            item.orderData.dateSalesConfirm ?? '-',
             part.availability ?? '-',
-            part.hsPartNumber ?? '-',
-            part.price,
-            (part.price ?? 0) * part.quantity,
+            //PO
             'KHS' + item.orderId,
+            item.orderData.dateCustomerApprove,
+            //DN
             'DN' + item.orderId,
-            item.orderData.germanData?.germanOffered.text ?? '-',
-            part.eurPrice,
-            (part.eurPrice ?? 0) * part.quantity,
-            ((part.eurPrice ?? 0) * part.quantity) * 0.15,
-            ((part.eurPrice ?? 0) * part.quantity) -
-                (((part.eurPrice ?? 0) * part.quantity) * 0.15),
-            item.orderData.germanData?.purchaseOrder.text ?? '-',
-            item.orderData.germanData?.orderConfirm.text ?? '-',
-            item.orderData.germanData?.dnSi ?? '-',
-            item.orderData.germanData?.invoice ?? '-',
-            item.orderData.trackingNumber ?? '-',
+            item.orderData.deliveryInputDateTime,
+            _note[item.orderId]?.date ?? '-',
+            //
             _daysBetween(
-                DateTime.parse(
-                    item.orderData.germanData?.germanOffered.date ?? ''),
+                DateTime.parse(item.orderData.dateCustomerApprove ?? ''),
                 DateTime.parse(item.orderData.deliveryInputDateTime ?? '')),
-            _daysBetween(
-                DateTime.parse(
-                    item.orderData.germanData?.germanOffered.date ?? ''),
-                DateTime.parse(_note[item.orderId]!.date))
+            part.price,
+            (part.price ?? 0) * part.quantity
           ];
 
           sheetObject.appendRow(dataRow);
@@ -184,6 +193,10 @@ class _InsightScreenState extends State<InsightScreen> {
 
   Future<DataSnapshot> _getPaymentList() async {
     return await paymentProof.get();
+  }
+
+  Future<DataSnapshot> _getUsers() async {
+    return await user.get();
   }
 
   Future<Map<String, DeliveryNote>> _getDNList() async {
