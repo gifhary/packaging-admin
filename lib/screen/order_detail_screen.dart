@@ -218,7 +218,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     order.child('${Encrypt.heh(_user.email)}/${_item.orderId}').update({
       'trackingNumber': _trackingId.text,
       'deliveryDate': _deliveryDate.text,
-      'delivered': true,
     }).then((value) {
       Get.defaultDialog(
           titleStyle: const TextStyle(color: Color.fromRGBO(117, 111, 99, 1)),
@@ -888,10 +887,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         !_item.orderData.delivered
                     ? _announceDeliveryNote
                     : null,
-                child: Text(_item.orderData.trackingNumber != null &&
-                        !_item.orderData.delivered
-                    ? 'Announce delivery note'
-                    : 'Delivery note announced'),
+                child: Text('Announce delivery note'),
               ),
               //TODO delivery note
               Visibility(
