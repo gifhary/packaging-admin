@@ -164,26 +164,33 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         .child('${Encrypt.heh(_user.email)}/${_item.orderId}')
         .update(_editItem.orderData.toMap())
         .then((value) {
-      debugPrint('quotation completed');
-      Get.back();
+      Get.defaultDialog(
+          titleStyle: const TextStyle(color: Color.fromRGBO(117, 111, 99, 1)),
+          title: "Success",
+          middleText: "Quotation completed",
+          onConfirm: () {
+            Get.back();
+            Get.back();
+          },
+          buttonColor: const Color.fromRGBO(117, 111, 99, 1),
+          confirmTextColor: Colors.white,
+          textConfirm: 'OK');
     });
   }
 
   _saveCompanyData() {
-    var data;
-
-    data = GermanData(
+    var data = GermanData(
         germanOffered: DataGroup(
             text: _germanOffer.text,
-            date: _item.orderData.germanData!.germanOffered.date ??
+            date: _item.orderData.germanData?.germanOffered.date ??
                 DateTime.now().toString()),
         purchaseOrder: DataGroup(
             text: _purchaseOrder.text,
-            date: _item.orderData.germanData!.purchaseOrder.date ??
+            date: _item.orderData.germanData?.purchaseOrder.date ??
                 DateTime.now().toString()),
         orderConfirm: DataGroup(
             text: _orderConfirm.text,
-            date: _item.orderData.germanData!.orderConfirm.date ??
+            date: _item.orderData.germanData?.orderConfirm.date ??
                 DateTime.now().toString()),
         dnSi: _dnSi.text,
         invoice: _invoice.text);
@@ -212,10 +219,37 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       'trackingNumber': _trackingId.text,
       'deliveryDate': _deliveryDate.text,
       'delivered': true,
+    }).then((value) {
+      Get.defaultDialog(
+          titleStyle: const TextStyle(color: Color.fromRGBO(117, 111, 99, 1)),
+          title: "Success",
+          middleText: "Delivery info submitted",
+          onConfirm: () {
+            Get.back();
+            Get.back();
+          },
+          buttonColor: const Color.fromRGBO(117, 111, 99, 1),
+          confirmTextColor: Colors.white,
+          textConfirm: 'OK');
+    });
+  }
+
+  _announceDeliveryNote() {
+    order.child('${Encrypt.heh(_user.email)}/${_item.orderId}').update({
+      'delivered': true,
       'deliveryInputDateTime': DateTime.now().toString(),
     }).then((value) {
-      debugPrint('tracking data submitter');
-      Get.back();
+      Get.defaultDialog(
+          titleStyle: const TextStyle(color: Color.fromRGBO(117, 111, 99, 1)),
+          title: "Success",
+          middleText: "Delivery note announced",
+          onConfirm: () {
+            Get.back();
+            Get.back();
+          },
+          buttonColor: const Color.fromRGBO(117, 111, 99, 1),
+          confirmTextColor: Colors.white,
+          textConfirm: 'OK');
     });
   }
 
@@ -845,6 +879,19 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     ],
                   ),
                 ),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  primary: const Color.fromRGBO(160, 152, 128, 1),
+                ),
+                onPressed: _item.orderData.trackingNumber != null &&
+                        !_item.orderData.delivered
+                    ? _announceDeliveryNote
+                    : null,
+                child: Text(_item.orderData.trackingNumber != null &&
+                        !_item.orderData.delivered
+                    ? 'Announce delivery note'
+                    : 'Delivery note announced'),
               ),
               //TODO delivery note
               Visibility(

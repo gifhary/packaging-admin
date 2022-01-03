@@ -34,6 +34,7 @@ class _InsightScreenState extends State<InsightScreen> {
   }
 
   _download() async {
+    debugPrint('loading download');
     setState(() {
       _loading = true;
     });
@@ -51,11 +52,16 @@ class _InsightScreenState extends State<InsightScreen> {
 
       var prf = await _getPaymentList();
       if (prf.exists) {
+        debugPrint('exists');
         Map<dynamic, dynamic> proofs = prf.value as Map;
         proofs.forEach((key, value) =>
             _proofList.putIfAbsent(key, () => PaymentProofList.fromMap(value)));
 
         _orderItems = _getCompletedOnly(_orderList, _proofList);
+        if (_orderItems.isEmpty) {
+          _noData();
+          return;
+        }
         _writeToExcel(_orderItems);
       } else {
         _noData();
@@ -137,10 +143,12 @@ class _InsightScreenState extends State<InsightScreen> {
             item.orderData.germanData?.invoice ?? '-',
             item.orderData.trackingNumber ?? '-',
             _daysBetween(
-                DateTime.parse(item.orderData.germanData!.germanOffered.date!),
-                DateTime.parse(item.orderData.deliveryInputDateTime!)),
+                DateTime.parse(
+                    item.orderData.germanData?.germanOffered.date ?? ''),
+                DateTime.parse(item.orderData.deliveryInputDateTime ?? '')),
             _daysBetween(
-                DateTime.parse(item.orderData.germanData!.germanOffered.date!),
+                DateTime.parse(
+                    item.orderData.germanData?.germanOffered.date ?? ''),
                 DateTime.parse(_note[item.orderId]!.date))
           ];
 
@@ -162,8 +170,9 @@ class _InsightScreenState extends State<InsightScreen> {
     List<Item> nyeh = [];
     proofs.forEach((user, val) {
       val.paymentProof.forEach((orderId, v) {
-        nyeh.add(Item(
-            orderId: orderId, orderData: orders[user]!.orderData[orderId]!));
+        if (orders[user]!.orderData[orderId]!.germanData != null)
+          nyeh.add(Item(
+              orderId: orderId, orderData: orders[user]!.orderData[orderId]!));
       });
     });
     return nyeh;
@@ -188,6 +197,7 @@ class _InsightScreenState extends State<InsightScreen> {
         ha.forEach((k, v) {
           debugPrint(k);
           data.putIfAbsent(k, () => DeliveryNote.fromMap(v));
+          debugPrint('data written');
         });
       });
     }
