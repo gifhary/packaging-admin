@@ -78,8 +78,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       _purchaseOrder.text =
           _item.orderData.germanData?.purchaseOrder.text ?? '';
       _orderConfirm.text = _item.orderData.germanData?.orderConfirm.text ?? '';
-      _dnSi.text = _item.orderData.germanData?.dnSi ?? '';
-      _invoice.text = _item.orderData.germanData?.invoice ?? '';
+      _dnSi.text = _item.orderData.germanData?.dnSi.text ?? '';
+      _invoice.text = _item.orderData.germanData?.invoice.text ?? '';
     }
 
     if (_item.orderData.trackingNumber != null ||
@@ -196,8 +196,14 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             text: _orderConfirm.text,
             date: _item.orderData.germanData?.orderConfirm.date ??
                 DateTime.now().toString()),
-        dnSi: _dnSi.text,
-        invoice: _invoice.text);
+        dnSi: DataGroup(
+            text: _dnSi.text,
+            date: _item.orderData.germanData?.dnSi.date ??
+                DateTime.now().toString()),
+        invoice: DataGroup(
+            text: _invoice.text,
+            date: _item.orderData.germanData?.invoice.date ??
+                DateTime.now().toString()));
 
     order
         .child('${Encrypt.heh(_user.email)}/${_item.orderId}')
@@ -756,56 +762,29 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              SizedBox(
-                                width: 500,
-                                child: IniTextField(
-                                  controller: _germanOffer,
-                                  label: "German Offered",
-                                  hintText: 'Enter German Offered',
-                                ),
-                              ),
-                              Text(_item.orderData.germanData?.germanOffered
-                                      .date ??
-                                  DateFormat('dd-MM-yyyy')
-                                      .format(DateTime.now()))
-                            ],
+                          SizedBox(
+                            width: 500,
+                            child: IniTextField(
+                              controller: _germanOffer,
+                              label: "German Offered",
+                              hintText: 'Enter German Offered',
+                            ),
                           ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              SizedBox(
-                                width: 500,
-                                child: IniTextField(
-                                  controller: _purchaseOrder,
-                                  label: "Purchased Order",
-                                  hintText: 'Enter PO',
-                                ),
-                              ),
-                              Text(_item.orderData.germanData?.purchaseOrder
-                                      .date ??
-                                  DateFormat('dd-MM-yyyy')
-                                      .format(DateTime.now()))
-                            ],
+                          SizedBox(
+                            width: 500,
+                            child: IniTextField(
+                              controller: _purchaseOrder,
+                              label: "Purchased Order",
+                              hintText: 'Enter PO',
+                            ),
                           ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              SizedBox(
-                                width: 500,
-                                child: IniTextField(
-                                  controller: _orderConfirm,
-                                  label: "Order Confirmation",
-                                  hintText: 'Enter OC',
-                                ),
-                              ),
-                              Text(_item.orderData.germanData?.orderConfirm
-                                      .date ??
-                                  DateFormat('dd-MM-yyyy')
-                                      .format(DateTime.now()))
-                            ],
+                          SizedBox(
+                            width: 500,
+                            child: IniTextField(
+                              controller: _orderConfirm,
+                              label: "Order Confirmation",
+                              hintText: 'Enter OC',
+                            ),
                           ),
                           SizedBox(
                             width: 500,

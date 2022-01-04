@@ -6,8 +6,8 @@ class GermanData {
   DataGroup germanOffered;
   DataGroup purchaseOrder;
   DataGroup orderConfirm;
-  String dnSi;
-  String invoice;
+  DataGroup dnSi;
+  DataGroup invoice;
   GermanData({
     required this.germanOffered,
     required this.purchaseOrder,
@@ -20,8 +20,8 @@ class GermanData {
     DataGroup? germanOffered,
     DataGroup? purchaseOrder,
     DataGroup? orderConfirm,
-    String? dnSi,
-    String? invoice,
+    DataGroup? dnSi,
+    DataGroup? invoice,
   }) {
     return GermanData(
       germanOffered: germanOffered ?? this.germanOffered,
@@ -37,8 +37,8 @@ class GermanData {
       'germanOffered': germanOffered.toMap(),
       'purchaseOrder': purchaseOrder.toMap(),
       'orderConfirm': orderConfirm.toMap(),
-      'dnSi': dnSi,
-      'invoice': invoice,
+      'dnSi': dnSi.toMap(),
+      'invoice': invoice.toMap(),
     };
   }
 
@@ -47,8 +47,8 @@ class GermanData {
       germanOffered: DataGroup.fromMap(map['germanOffered']),
       purchaseOrder: DataGroup.fromMap(map['purchaseOrder']),
       orderConfirm: DataGroup.fromMap(map['orderConfirm']),
-      dnSi: map['dnSi'] ?? '',
-      invoice: map['invoice'] ?? '',
+      dnSi: DataGroup.fromMap(map['dnSi']),
+      invoice: DataGroup.fromMap(map['invoice']),
     );
   }
 

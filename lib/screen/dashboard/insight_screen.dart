@@ -103,9 +103,12 @@ class _InsightScreenState extends State<InsightScreen> {
 
   _writeToExcel(List<Item> nyeh) {
     var excel = Excel.createExcel();
-    var sheetObject = excel['Sheet1'];
+    excel.rename('Sheet1', 'KHS ID - Customer');
 
-    List<String> columnName = [
+    var sheetObject = excel['KHS ID - Customer'];
+    var sheet2 = excel['KHS ID - German'];
+
+    List<String> sheet1Column = [
       'Customer',
       'QTY',
       'Spare Part Name',
@@ -129,12 +132,41 @@ class _InsightScreenState extends State<InsightScreen> {
       'Amount per pc (IDR)',
       'Total Amount (IDR)'
     ];
-    sheetObject.insertRowIterables(columnName, 1);
+    List<String> sheet2Column = [
+      'QTY',
+      'Spare Part Name',
+      'Spare Part Number',
+      'Machine Type',
+      'HS Code',
+//
+      'Code',
+      'Date',
+      'German Offered',
+      'Date',
+//
+      'Code',
+      'Date',
+//
+      'Code',
+      'Date',
+//
+      'Arrival Date',
+      'Lead Time',
+      'Invoice',
+      'Shipping',
+      'Disc. 15%',
+      'Amount per pc (EUR)',
+      'Total Amount (EUR)',
+    ];
 
+    sheetObject.insertRowIterables(sheet1Column, 1);
+    sheet2.insertRowIterables(sheet2Column, 1);
+
+//sheet1
     for (int i = 97; i <= 102; i++) {
       sheetObject.merge(CellIndex.indexByString(String.fromCharCode(i) + '1'),
           CellIndex.indexByString(String.fromCharCode(i) + '2'),
-          customValue: columnName[i - 97]);
+          customValue: sheet1Column[i - 97]);
     }
     sheetObject.merge(
         CellIndex.indexByString('G1'), CellIndex.indexByString('J1'),
@@ -148,7 +180,25 @@ class _InsightScreenState extends State<InsightScreen> {
     for (int i = 112; i <= 114; i++) {
       sheetObject.merge(CellIndex.indexByString(String.fromCharCode(i) + '1'),
           CellIndex.indexByString(String.fromCharCode(i) + '2'),
-          customValue: columnName[i - 97]);
+          customValue: sheet1Column[i - 97]);
+    }
+
+    //sheet2
+    for (int i = 97; i <= 101; i++) {
+      sheet2.merge(CellIndex.indexByString(String.fromCharCode(i) + '1'),
+          CellIndex.indexByString(String.fromCharCode(i) + '2'),
+          customValue: sheet2Column[i - 97]);
+    }
+    sheet2.merge(CellIndex.indexByString('F1'), CellIndex.indexByString('I1'),
+        customValue: 'PO');
+    sheet2.merge(CellIndex.indexByString('J1'), CellIndex.indexByString('K1'),
+        customValue: 'Order Confirmation');
+    sheet2.merge(CellIndex.indexByString('L1'), CellIndex.indexByString('M1'),
+        customValue: 'DN-SI');
+    for (int i = 110; i <= 116; i++) {
+      sheet2.merge(CellIndex.indexByString(String.fromCharCode(i) + '1'),
+          CellIndex.indexByString(String.fromCharCode(i) + '2'),
+          customValue: sheet2Column[i - 97]);
     }
 
     for (Item item in nyeh) {
@@ -157,7 +207,7 @@ class _InsightScreenState extends State<InsightScreen> {
           var userId = _orderList.keys.firstWhere(
               (k) => _orderList[k]!.toJson().contains(item.orderId));
 
-          List dataRow = [
+          List dataRowSheet1 = [
             _users[userId]?.userDetail?.company ?? '-',
             part.quantity,
             part.itemName,
@@ -184,7 +234,38 @@ class _InsightScreenState extends State<InsightScreen> {
             (part.price ?? 0) * part.quantity
           ];
 
-          sheetObject.appendRow(dataRow);
+          List dataRowSheet2 = [
+            part.quantity,
+            part.itemName,
+            part.partNumber,
+            machine.machineType,
+            part.hsPartNumber,
+            //PO
+            item.orderData.germanData?.purchaseOrder.text ?? '-',
+            item.orderData.germanData?.purchaseOrder.date ?? '-',
+            item.orderData.germanData?.germanOffered.text ?? '-',
+            item.orderData.germanData?.germanOffered.date ?? '-',
+            //OC
+            item.orderData.germanData?.orderConfirm.text ?? '-',
+            item.orderData.germanData?.orderConfirm.date ?? '-',
+            //DN
+            item.orderData.germanData?.dnSi.text,
+            item.orderData.germanData?.dnSi.date,
+            //
+            item.orderData.deliveryInputDateTime ?? '-',
+            _daysBetween(
+                DateTime.parse(
+                    item.orderData.germanData?.orderConfirm.date ?? ''),
+                DateTime.parse(item.orderData.deliveryInputDateTime ?? '')),
+            item.orderData.germanData?.invoice ?? '-',
+            item.orderData.trackingNumber,
+            ((part.eurPrice ?? 0) * part.quantity) * 0.15,
+            part.eurPrice,
+            (part.eurPrice ?? 0) * part.quantity
+          ];
+
+          sheetObject.appendRow(dataRowSheet1);
+          sheet2.appendRow(dataRowSheet2);
         });
       });
     }
