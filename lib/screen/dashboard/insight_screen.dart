@@ -131,11 +131,34 @@ class _InsightScreenState extends State<InsightScreen> {
     ];
     sheetObject.insertRowIterables(columnName, 1);
 
+    for (int i = 97; i <= 102; i++) {
+      sheetObject.merge(CellIndex.indexByString(String.fromCharCode(i) + '1'),
+          CellIndex.indexByString(String.fromCharCode(i) + '2'),
+          customValue: columnName[i - 97]);
+    }
+    sheetObject.merge(
+        CellIndex.indexByString('G1'), CellIndex.indexByString('J1'),
+        customValue: 'Quotation');
+    sheetObject.merge(
+        CellIndex.indexByString('K1'), CellIndex.indexByString('L1'),
+        customValue: 'PO');
+    sheetObject.merge(
+        CellIndex.indexByString('M1'), CellIndex.indexByString('O1'),
+        customValue: 'Delivery Note');
+    for (int i = 112; i <= 114; i++) {
+      sheetObject.merge(CellIndex.indexByString(String.fromCharCode(i) + '1'),
+          CellIndex.indexByString(String.fromCharCode(i) + '2'),
+          customValue: columnName[i - 97]);
+    }
+
     for (Item item in nyeh) {
       item.orderData.machineList.forEach((key, machine) {
         machine.partRequest.forEach((key, part) {
+          var userId = _orderList.keys.firstWhere(
+              (k) => _orderList[k]!.toJson().contains(item.orderId));
+
           List dataRow = [
-            _users[item.orderId]?.userDetail?.company ?? '-',
+            _users[userId]?.userDetail?.company ?? '-',
             part.quantity,
             part.itemName,
             part.partNumber,
