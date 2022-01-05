@@ -186,24 +186,34 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     var data = GermanData(
         germanOffered: DataGroup(
             text: _germanOffer.text,
-            date: _item.orderData.germanData?.germanOffered.date ??
-                DateTime.now().toString()),
+            date: _germanOffer.text.isNotEmpty
+                ? _item.orderData.germanData?.germanOffered.date ??
+                    DateTime.now().toString()
+                : null),
         purchaseOrder: DataGroup(
             text: _purchaseOrder.text,
-            date: _item.orderData.germanData?.purchaseOrder.date ??
-                DateTime.now().toString()),
+            date: _purchaseOrder.text.isNotEmpty
+                ? _item.orderData.germanData?.purchaseOrder.date ??
+                    DateTime.now().toString()
+                : null),
         orderConfirm: DataGroup(
             text: _orderConfirm.text,
-            date: _item.orderData.germanData?.orderConfirm.date ??
-                DateTime.now().toString()),
+            date: _orderConfirm.text.isNotEmpty
+                ? _item.orderData.germanData?.orderConfirm.date ??
+                    DateTime.now().toString()
+                : null),
         dnSi: DataGroup(
             text: _dnSi.text,
-            date: _item.orderData.germanData?.dnSi.date ??
-                DateTime.now().toString()),
+            date: _dnSi.text.isNotEmpty
+                ? _item.orderData.germanData?.dnSi.date ??
+                    DateTime.now().toString()
+                : null),
         invoice: DataGroup(
             text: _invoice.text,
-            date: _item.orderData.germanData?.invoice.date ??
-                DateTime.now().toString()));
+            date: _invoice.text.isNotEmpty
+                ? _item.orderData.germanData?.invoice.date ??
+                    DateTime.now().toString()
+                : null));
 
     order
         .child('${Encrypt.heh(_user.email)}/${_item.orderId}')
