@@ -5,6 +5,10 @@ import 'package:admin/widget/colored_tabbar.dart';
 import 'package:flutter/material.dart';
 
 class DashboardScreen extends StatelessWidget {
+  final VoidCallback logOut;
+
+  const DashboardScreen({Key? key, required this.logOut}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -28,7 +32,7 @@ class DashboardScreen extends StatelessWidget {
           physics: NeverScrollableScrollPhysics(),
           children: [
             OrderScreen(),
-            InsightScreen(),
+            InsightScreen(logOut: logOut),
             SettingScreen(),
           ],
         ),

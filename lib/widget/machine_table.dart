@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class MachineTable extends StatefulWidget {
+  final bool userForm;
   final bool editable;
   final MachineData machineData;
   final Function(MachineData) onDataChanged;
@@ -12,7 +13,8 @@ class MachineTable extends StatefulWidget {
       {Key? key,
       required this.machineData,
       required this.onDataChanged,
-      required this.editable})
+      required this.editable,
+      this.userForm = false})
       : super(key: key);
 
   @override
@@ -143,24 +145,26 @@ class _MachineTableState extends State<MachineTable> {
                           width: 130,
                           child: Text(
                               widget.machineData.partRequest[key]!.partNumber)),
-                      widget.editable
-                          ? SizedBox(
-                              width: 130,
-                              height: 22,
-                              child: AnotherTextField(
-                                hintText: 'HS code',
-                                onChanged: (val) {
-                                  _editData.partRequest[key]!.hsPartNumber =
-                                      val;
-                                },
-                              ),
-                            )
-                          : Text(
-                              widget.machineData.partRequest[key]!
-                                      .hsPartNumber ??
-                                  '',
-                              style: TextStyle(color: Colors.blue),
-                            ),
+                      widget.userForm
+                          ? Container()
+                          : widget.editable
+                              ? SizedBox(
+                                  width: 130,
+                                  height: 22,
+                                  child: AnotherTextField(
+                                    hintText: 'HS code',
+                                    onChanged: (val) {
+                                      _editData.partRequest[key]!.hsPartNumber =
+                                          val;
+                                    },
+                                  ),
+                                )
+                              : Text(
+                                  widget.machineData.partRequest[key]!
+                                          .hsPartNumber ??
+                                      '',
+                                  style: TextStyle(color: Colors.blue),
+                                ),
                     ],
                   )),
                   DataCell(Text(widget.machineData.partRequest[key]!.quantity
@@ -186,17 +190,20 @@ class _MachineTableState extends State<MachineTable> {
                                   },
                                 ),
                                 SizedBox(height: 10),
-                                AnotherTextField(
-                                  numberOnly: true,
-                                  hintText: 'EUR price',
-                                  onChanged: (val) {
-                                    setState(() {
-                                      _editData.partRequest[key]?.eurPrice =
-                                          double.tryParse(val);
-                                    });
-                                    widget.onDataChanged(_editData);
-                                  },
-                                ),
+                                widget.userForm
+                                    ? Container()
+                                    : AnotherTextField(
+                                        numberOnly: true,
+                                        hintText: 'EUR price',
+                                        onChanged: (val) {
+                                          setState(() {
+                                            _editData.partRequest[key]
+                                                    ?.eurPrice =
+                                                double.tryParse(val);
+                                          });
+                                          widget.onDataChanged(_editData);
+                                        },
+                                      ),
                               ],
                             ),
                           )
@@ -210,13 +217,17 @@ class _MachineTableState extends State<MachineTable> {
                                     cur.format((widget.machineData
                                             .partRequest[key]?.price ??
                                         0))),
-                                Text(
-                                  'EUR ' +
-                                      cur.format((widget.machineData
-                                              .partRequest[key]?.eurPrice ??
-                                          0)),
-                                  style: TextStyle(color: Colors.blue),
-                                ),
+                                widget.userForm
+                                    ? Container()
+                                    : Text(
+                                        'EUR ' +
+                                            cur.format((widget
+                                                    .machineData
+                                                    .partRequest[key]
+                                                    ?.eurPrice ??
+                                                0)),
+                                        style: TextStyle(color: Colors.blue),
+                                      ),
                               ],
                             ),
                           ),
@@ -231,13 +242,16 @@ class _MachineTableState extends State<MachineTable> {
                             cur.format(
                                 ((_editData.partRequest[key]?.price ?? 0) *
                                     _editData.partRequest[key]!.quantity))),
-                        Text(
-                          'EUR ' +
-                              cur.format(
-                                  ((_editData.partRequest[key]?.eurPrice ?? 0) *
-                                      _editData.partRequest[key]!.quantity)),
-                          style: TextStyle(color: Colors.blue),
-                        ),
+                        widget.userForm
+                            ? Container()
+                            : Text(
+                                'EUR ' +
+                                    cur.format(((_editData
+                                                .partRequest[key]?.eurPrice ??
+                                            0) *
+                                        _editData.partRequest[key]!.quantity)),
+                                style: TextStyle(color: Colors.blue),
+                              ),
                       ],
                     ),
                   )),

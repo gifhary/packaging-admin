@@ -65,6 +65,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   TextEditingController _trackingUrl = TextEditingController();
   TextEditingController _deliveryDate = TextEditingController();
 
+  bool userForm = false;
+
   @override
   void initState() {
     _editItem = _item;
@@ -278,7 +280,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   }
 
   _downloadProofForm(ScreenshotController controller, String name) async {
-    await controller
+    return await controller
         .capture(delay: const Duration(milliseconds: 10))
         .then((image) async {
       if (image != null) {
@@ -553,6 +555,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           ),
                           for (String key in _item.orderData.machineList.keys)
                             MachineTable(
+                              userForm: userForm,
                               editable: !_item.orderData.confirmedBySales,
                               machineData: _item.orderData.machineList[key]!,
                               onDataChanged: (data) {
@@ -609,68 +612,86 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                               ),
                             ],
                           ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              Text(
-                                'Total',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.blue),
-                              ),
-                              SizedBox(width: 50),
-                              Text(
-                                'EUR ' + cur.format(_eurTotal),
-                                style: TextStyle(color: Colors.blue),
-                              ),
-                            ],
-                          ),
-                          _item.orderData.confirmedBySales
-                              ? Row(
+                          userForm
+                              ? Container()
+                              : Row(
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   children: [
                                     Text(
-                                      'Disc. ${_item.orderData.hsDiscount ?? 0}%',
+                                      'Total',
                                       style: TextStyle(
                                           fontWeight: FontWeight.bold,
                                           color: Colors.blue),
                                     ),
                                     SizedBox(width: 50),
                                     Text(
-                                      'EUR ' +
-                                          cur.format(_eurTotal *
-                                              ((_item.orderData.hsDiscount ??
-                                                      0) /
-                                                  100)),
+                                      'EUR ' + cur.format(_eurTotal),
                                       style: TextStyle(color: Colors.blue),
                                     ),
                                   ],
-                                )
-                              : Row(
+                                ),
+                          SizedBox(height: 20),
+                          userForm
+                              ? Row(
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   children: [
                                     Text(
-                                      'Disc. ',
+                                      'Payment Terms',
                                       style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.blue),
+                                          fontWeight: FontWeight.bold),
                                     ),
-                                    SizedBox(
-                                      width: 50,
-                                      child: AnotherTextField(
-                                        numberOnly: true,
-                                        onChanged: (val) {
-                                          setState(() {
-                                            _editItem.orderData.hsDiscount =
-                                                double.tryParse(val)!;
-                                          });
-                                        },
-                                      ),
-                                    ),
-                                    Text('%',
-                                        style: TextStyle(color: Colors.blue)),
+                                    SizedBox(width: 60),
+                                    Text('YI45'),
                                   ],
-                                ),
+                                )
+                              : _item.orderData.confirmedBySales
+                                  ? Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        Text(
+                                          'Disc. ${_item.orderData.hsDiscount ?? 0}%',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.blue),
+                                        ),
+                                        SizedBox(width: 50),
+                                        Text(
+                                          'EUR ' +
+                                              cur.format(_eurTotal *
+                                                  ((_item.orderData
+                                                              .hsDiscount ??
+                                                          0) /
+                                                      100)),
+                                          style: TextStyle(color: Colors.blue),
+                                        ),
+                                      ],
+                                    )
+                                  : Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        Text(
+                                          'Disc. ',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.blue),
+                                        ),
+                                        SizedBox(
+                                          width: 50,
+                                          child: AnotherTextField(
+                                            numberOnly: true,
+                                            onChanged: (val) {
+                                              setState(() {
+                                                _editItem.orderData.hsDiscount =
+                                                    double.tryParse(val)!;
+                                              });
+                                            },
+                                          ),
+                                        ),
+                                        Text('%',
+                                            style:
+                                                TextStyle(color: Colors.blue)),
+                                      ],
+                                    ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
@@ -680,26 +701,35 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                       color: Color.fromRGBO(160, 152, 128, 1))),
                             ],
                           ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              Text(
-                                'Total',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.blue),
-                              ),
-                              SizedBox(width: 50),
-                              Text(
-                                'EUR ' +
-                                    cur.format(_eurTotal -
-                                        (_eurTotal *
-                                            ((_item.orderData.hsDiscount ?? 0) /
-                                                100))),
-                                style: TextStyle(color: Colors.blue),
-                              ),
-                            ],
-                          ),
+                          userForm
+                              ? Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    Text('45 days from Invoice Receipt')
+                                  ],
+                                )
+                              : Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    Text(
+                                      'Total',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.blue),
+                                    ),
+                                    SizedBox(width: 50),
+                                    Text(
+                                      'EUR ' +
+                                          cur.format(_eurTotal -
+                                              (_eurTotal *
+                                                  ((_item.orderData
+                                                              .hsDiscount ??
+                                                          0) /
+                                                      100))),
+                                      style: TextStyle(color: Colors.blue),
+                                    ),
+                                  ],
+                                ),
                           SizedBox(height: 80),
                           Visibility(
                             visible: !_item.orderData.confirmedBySales,
@@ -721,6 +751,29 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
+                              InkWell(
+                                onTap: () async {
+                                  setState(() {
+                                    userForm = true;
+                                  });
+                                  await _downloadProofForm(
+                                      _quotationCtrl,
+                                      _item.orderData.confirmedBySales &&
+                                              _item.orderData.approvedByCustomer
+                                          ? 'customer-purchase'
+                                          : 'customer-quotation');
+                                  setState(() {
+                                    userForm = false;
+                                  });
+                                },
+                                child: Text(
+                                  'Download Customer Form',
+                                  style: TextStyle(
+                                      color: Colors.grey,
+                                      decoration: TextDecoration.underline),
+                                ),
+                              ),
+                              SizedBox(width: 20),
                               InkWell(
                                 onTap: () => _downloadProofForm(
                                     _quotationCtrl,

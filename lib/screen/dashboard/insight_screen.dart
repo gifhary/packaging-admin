@@ -11,6 +11,10 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 class InsightScreen extends StatefulWidget {
+  final VoidCallback logOut;
+
+  const InsightScreen({Key? key, required this.logOut}) : super(key: key);
+
   @override
   State<InsightScreen> createState() => _InsightScreenState();
 }
@@ -326,14 +330,28 @@ class _InsightScreenState extends State<InsightScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
+        alignment: Alignment.center,
         children: [
-          Center(
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                primary: const Color.fromRGBO(160, 152, 128, 1),
-              ),
-              onPressed: _download,
-              child: const Text('Download Completed Order'),
+          SizedBox(
+            width: double.infinity,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    primary: const Color.fromRGBO(160, 152, 128, 1),
+                  ),
+                  onPressed: _download,
+                  child: const Text('Download Completed Order'),
+                ),
+                SizedBox(height: 20),
+                OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                      primary: const Color.fromRGBO(160, 152, 128, 1)),
+                  onPressed: widget.logOut,
+                  child: const Text('Log Out'),
+                )
+              ],
             ),
           ),
           Visibility(
@@ -343,9 +361,7 @@ class _InsightScreenState extends State<InsightScreen> {
               width: double.infinity,
               color: Colors.black.withOpacity(0.1),
               child: Center(
-                child: CircularProgressIndicator(
-                  semanticsValue: 'ss',
-                ),
+                child: CircularProgressIndicator(),
               ),
             ),
           )
