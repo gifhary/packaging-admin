@@ -1,5 +1,6 @@
 import 'package:admin/constant/db_constant.dart';
 import 'package:admin/model/item.dart';
+import 'package:admin/model/order_item_model.dart';
 import 'package:admin/model/order_list.dart';
 import 'package:admin/model/staff.dart';
 import 'package:admin/model/user.dart';
@@ -22,6 +23,8 @@ class _OrderScreenState extends State<OrderScreen> {
 
   Map<String, OrderList> _list = Map();
   Map<String, User> _users = Map();
+
+  List<OrderItemModel> _listSort = [];
 
   late Staff _director, _salesAdmin, _salesManager;
 
@@ -54,6 +57,7 @@ class _OrderScreenState extends State<OrderScreen> {
         values.forEach(
             (key, val) => _users.putIfAbsent(key, () => User.fromMap(val)));
       });
+      _putToSortItem(_list);
     });
   }
 
@@ -65,10 +69,39 @@ class _OrderScreenState extends State<OrderScreen> {
 
         values.forEach(
             (key, val) => _list.putIfAbsent(key, () => OrderList.fromMap(val)));
+
         _getUsers();
         debugPrint('Hahaha ' + _list.length.toString());
       }
     });
+  }
+
+  _putToSortItem(Map<String, OrderList> list) {
+    for (String i in _list.keys) {
+      for (String j in _list[i]!.orderData.keys) {
+        _listSort.add(OrderItemModel(
+          date: DateTime.parse(_list[i]!.orderData[j]!.orderTime),
+          orderId: j,
+          status: _getStatus(
+              _list[i]!.orderData[j]!.delivered,
+              _list[i]!.orderData[j]!.confirmedBySales,
+              _list[i]!.orderData[j]!.approvedByCustomer),
+          company: _users[i]!.userDetail!.company ?? '-',
+          userId: Encrypt.heh(_users[i]!.email),
+          onTap: () => Get.toNamed(RouteConstant.orderDetail, arguments: {
+            'item': Item(orderId: j, orderData: _list[i]!.orderData[j]!),
+            'user': _users[i]!,
+            'director': _director,
+            'salesAdmin': _salesAdmin,
+            'salesManager': _salesManager,
+          })!
+              .then((value) {
+            setState(() {});
+          }),
+        ));
+      }
+    }
+    _listSort.sort((a, b) => b.date.compareTo(a.date));
   }
 
   String _getStatus(bool delivered, salesConfirm, customerApprove) {
@@ -119,31 +152,13 @@ class _OrderScreenState extends State<OrderScreen> {
                         Text('Time Zone: Western Indonesia Time (GMT+7)'),
                         SizedBox(height: 20),
                         Divider(color: const Color.fromRGBO(160, 152, 128, 1)),
-                        for (String i in _list.keys)
-                          for (String j in _list[i]!.orderData.keys)
-                            OrderItem(
-                              orderId: j,
-                              status: _getStatus(
-                                  _list[i]!.orderData[j]!.delivered,
-                                  _list[i]!.orderData[j]!.confirmedBySales,
-                                  _list[i]!.orderData[j]!.approvedByCustomer),
-                              company: _users[i]!.userDetail!.company ?? '-',
-                              userId: Encrypt.heh(_users[i]!.email),
-                              onTap: () => Get.toNamed(
-                                      RouteConstant.orderDetail,
-                                      arguments: {
-                                    'item': Item(
-                                        orderId: j,
-                                        orderData: _list[i]!.orderData[j]!),
-                                    'user': _users[i]!,
-                                    'director': _director,
-                                    'salesAdmin': _salesAdmin,
-                                    'salesManager': _salesManager,
-                                  })!
-                                  .then((value) {
-                                setState(() {});
-                              }),
-                            )
+                        for (OrderItemModel item in _listSort)
+                          OrderItem(
+                              orderId: item.orderId,
+                              status: item.status,
+                              company: item.company,
+                              userId: item.userId,
+                              onTap: item.onTap)
                       ],
                     )),
               ),
