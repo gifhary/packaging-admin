@@ -73,7 +73,7 @@ class UserDetail {
 
   factory UserDetail.fromMap(Map<String, dynamic> map) {
     return UserDetail(
-      name: map['name'],
+      name: '${map['firstName']} ${map['lastName']}',
       title: map['title'],
       firstName: map['firstName'],
       lastName: map['lastName'],

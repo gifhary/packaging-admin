@@ -4,6 +4,7 @@ import 'package:admin/model/item.dart';
 import 'package:admin/model/order_list.dart';
 import 'package:admin/model/payment_proof.dart';
 import 'package:admin/model/user.dart';
+import 'package:admin/route/route_constant.dart';
 import 'package:excel/excel.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -11,9 +12,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 class InsightScreen extends StatefulWidget {
-  final VoidCallback logOut;
-
-  const InsightScreen({Key? key, required this.logOut}) : super(key: key);
+  const InsightScreen({Key? key}) : super(key: key);
 
   @override
   State<InsightScreen> createState() => _InsightScreenState();
@@ -348,7 +347,7 @@ class _InsightScreenState extends State<InsightScreen> {
                 OutlinedButton(
                   style: OutlinedButton.styleFrom(
                       primary: const Color.fromRGBO(160, 152, 128, 1)),
-                  onPressed: widget.logOut,
+                  onPressed: () => Get.offAllNamed(RouteConstant.auth),
                   child: const Text('Log Out'),
                 )
               ],
